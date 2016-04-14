@@ -1,5 +1,18 @@
 local inspect = require 'inspect'
 
+local function dump(node, indent)
+  indent = indent or 0
+
+  print(string.rep('  ', indent) .. node.type .. ':')
+  for i=1, #node do
+    if type(node[i]) == 'table' then
+      dump(node[i], indent + 1)
+    else
+      print(string.rep('  ', indent + 1) .. tostring(node[i]))
+    end
+  end
+end
+
 local function tokenize(content)
   local pos = 1
   local tokens = {}
@@ -110,6 +123,29 @@ local function parse(tokens)
   local function walk()
     local token = tokens[pos]
 
+    if token.type == 'control' then
+      if token.value == 'do' then
+        local block = { type = 'block' }
+
+        pos = pos + 1
+        while tokens[pos].value ~= 'end' do
+          local expression = walk()
+          table.insert(block, expression)
+        end
+
+        pos = pos + 1
+        return block
+      end
+      -- if token.value == 'if' then
+      --   pos = pos + 1
+      --   local node = { type = 'conditional-expression', walk() }
+      --
+      --
+      --
+      --   return node
+      -- end
+    end
+
     if token.type == 'unary' then
       local operator = token
       local value = tokens[pos + 1]
@@ -136,6 +172,8 @@ local function parse(tokens)
       pos = pos + 1
       return token.value --{ type = 'value', token }
     end
+
+    error(('unexpected token %q at position %d'):format(token.value, token.position))
   end
 
   local tree = {
@@ -149,19 +187,6 @@ local function parse(tokens)
   return tree
 end
 
-local function dump(node, indent)
-  indent = indent or 0
-
-  print(string.rep('  ', indent) .. node.type .. ':')
-  for i=1, #node do
-    if type(node[i]) == 'table' then
-      dump(node[i], indent + 1)
-    else
-      print(string.rep('  ', indent + 1) .. tostring(node[i]))
-    end
-  end
-end
-
 
 local path = ...
 local _, content = io.input(path), io.read('*a'), io.close(), io.input()
@@ -169,4 +194,5 @@ local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 local tokens = tokenize(content)
 local tree = parse(tokens)
 
+-- print(inspect(tokens))
 dump(tree)
