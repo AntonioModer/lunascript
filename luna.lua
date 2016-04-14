@@ -295,7 +295,7 @@ local function translate(tree)
         right = right[1]
       end
 
-      insert(block, { type = 'assign-statement', left, op, right })
+      insert(block, { type = 'assign-statement', left, right })
       return true
     end
   end
@@ -331,7 +331,7 @@ local function translate(tree)
     end
 
     insert(blockOutput, 1, {
-      type = 'local-statement',
+      type = 'local-assign-statement',
       {
         type = 'names', unpack(scope)
       },
@@ -344,13 +344,39 @@ local function translate(tree)
 end
 
 
+local function compile(translated)
+  local source = {}
+
+  local function compileBlock(block)
+    for i, node in ipairs(block) do
+      if node.type == 'local-assign-statement' then
+        local names = node[1]
+        insert(source, format('local %s', concat(names, ', ')))
+        insert(source, '\n')
+      elseif node.type == 'assign-statement' then
+        local names, expressions = unpack(node)
+        insert(source, format('%s', concat(names, ', ')))
+        insert(source, ' = ')
+        insert(source, format('%s', concat(expressions, ', ')))
+        insert(source, '\n')
+      end
+    end
+  end
+
+  compileBlock(translated)
+  return concat(source)
+end
+
+
 local path = ...
 local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 
 local tokens = tokenize(content)
 local tree = parse(tokens)
 local translated = translate(tree)
+local output = compile(translated)
 
 -- print(inspect(tokens))
-dump(tree)
-dump(translated)
+-- dump(tree)
+-- dump(translated)
+print(output)
