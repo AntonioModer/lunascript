@@ -77,14 +77,13 @@ local function tokenize(content)
       or match('function', 'control')
       or match('return', 'control')
 
+      -- identifiers
+      or match('[%w_][%a_]*', 'identifier')
 
       -- strings
       or match('%b""', 'literal') --TODO: account for quote escapes
       or match("%b''", 'literal')
       or match('%[%[.-%]%]', 'literal')
-
-      -- identifiers
-      or match('[%w_][%a_]*', 'identifier')
 
       -- symbols
       or match('>>', 'binary')
@@ -141,7 +140,15 @@ local function parse(tokens)
         pos = pos + 1
         local condition = walk()
         local pass = walk()
-        return { type = 'conditional-expression', condition, pass }
+        local fail
+
+        token = tokens[pos]
+        if token and token.type == 'control' and token.value == 'else' then
+          pos = pos + 1
+          fail = walk()
+        end
+
+        return { type = 'conditional-expression', condition, pass, fail }
       end
     end
 
@@ -176,7 +183,7 @@ local function parse(tokens)
   end
 
   local tree = {
-    type = 'program',
+    type = 'script',
   }
 
   while pos <= #tokens do

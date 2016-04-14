@@ -1,7 +1,10 @@
-if true or false
-  pass
+number = randomNumber
 
-if otherwise
-  fail
-
-test + here
+guess = getInput
+if guess > number do
+  tooHigh
+end else if guess < number do
+  tooLow
+end else do
+  winrar
+end
