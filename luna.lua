@@ -71,10 +71,7 @@ local function parse(content)
       -- identifiers
       or match('[%w_][%a_]*', 'identifier')
 
-
       -- symbols
-      or match(singleops, 'symbol')
-
       or match('>>', 'symbol')
       or match('<<', 'symbol')
       or match('//', 'symbol')
@@ -84,8 +81,10 @@ local function parse(content)
       or match('<=', 'symbol')
       or match('>=', 'symbol')
 
-      or match('%.%.', 'symbol')
       or match('%.%.%.', 'symbol')
+      or match('%.%.', 'symbol')
+
+      or match(singleops, 'symbol')
 
     -- lol short circuit abuse
     ) then
