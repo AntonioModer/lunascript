@@ -268,18 +268,20 @@ local function parse(tokens)
 end
 
 local function compile(tree)
-  local function getIndent(indentLevel)
-    return ('  '):rep(indentLevel)
+  local indent = 0
+
+  local function getIndent()
+    return ('  '):rep(indent)
   end
 
-  local function append(to, indentLevel, content, ...)
-    if indentLevel > 0 then
-      insert(to, getIndent(indentLevel))
+  local function append(to, content, ...)
+    if indent > 0 then
+      insert(to, getIndent())
     end
     insert(to, format(content, ...))
   end
 
-  local function compileBlock(block, indentLevel)
+  local function compileBlock(block)
     local source = {}
     local scope = {}
 
@@ -293,16 +295,19 @@ local function compile(tree)
           scope[name] = true
         end
 
-        append(source, indentLevel, '%s %s %s\n', left[1], op, right[1])
+        append(source, '%s %s %s\n', left[1], op, right[1])
       elseif node.type == 'block' then
-        append(source, indentLevel, 'do\n')
-        append(source, 0, compileBlock(node, indentLevel + 1))
-        append(source, indentLevel, 'end\n')
+        append(source, 'do\n')
+
+        indent = indent + 1
+        append(source, compileBlock(node))
+        indent = indent - 1
+
+        append(source, 'end\n')
       end
     end
 
-    insert(source, 1, getIndent(indentLevel))
-    insert(source, 2, format('local %s\n', table.concat(scope, ', ')))
+    insert(source, 1, format('local %s\n', table.concat(scope, ', ')))
     return table.concat(source)
   end
 
