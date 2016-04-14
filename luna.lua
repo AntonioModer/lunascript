@@ -1,6 +1,7 @@
 local inspect = require 'inspect'
 
 local insert = table.insert
+local concat = table.concat
 local format = string.format
 
 local function dump(node, indent)
@@ -274,60 +275,77 @@ local function compile(tree)
     return ('  '):rep(indent)
   end
 
+  local function appendIndent(to)
+    insert(to, getIndent())
+  end
+
   local function append(to, content, ...)
-    if indent > 0 then
-      insert(to, getIndent())
-    end
     insert(to, format(content, ...))
   end
 
 
-  local function compileExpression(node)
-    if node.type == 'name' or node.type == 'constant' then
-      return node[1]
-    elseif node.type == 'binary-expression' then
-      local left, op, right = unpack(node)
-      return format('%s %s %s', compileExpression(left), op:gsub('%s', ''), compileExpression(right))
+  local function compileLiteral(node, source)
+    append(source, node[1])
+  end
+
+  local function compileAssign(node, source, scope)
+    local left, op, right = unpack(node)
+
+    if right.type == 'assign-expression' then
+      compileAssign(right, source, scope)
+      right = right[1]
+    end
+
+    appendIndent(source)
+    if left.type == 'name' then
+      compileLiteral(left, source)
+    end
+    append(source, ' %s ', op)
+    if right.type == 'name' or right.type == 'constant' then
+      compileLiteral(right, source)
+    end
+    append(source, '\n')
+
+
+    local name = left[1]
+    if not scope[name] then
+      insert(scope, name)
+      scope[name] = true
     end
   end
 
-  local function compileAssign(node)
-    local left, op, right = unpack(node)
-    return format('%s %s %s\n', left[1], op, compileExpression(right)), left
-  end
-
-  local function compileBlock(block)
-    local source = {}
+  local function compileBlock(block, source)
     local scope = {}
+    local blockSource = {}
 
     for i, node in ipairs(block) do
       if node.type == 'assign-expression' then
-        local content, names = compileAssign(node)
-
-        for i, name in ipairs(names) do
-          if not scope[name] then
-            insert(scope, name)
-            scope[name] = true
-          end
-        end
-
-        append(source, content)
+        compileAssign(node, blockSource, scope)
       elseif node.type == 'block' then
-        append(source, 'do\n')
+        appendIndent(blockSource)
+        append(blockSource, 'do\n')
 
         indent = indent + 1
-        append(source, compileBlock(node))
+        compileBlock(node, blockSource)
         indent = indent - 1
 
-        append(source, 'end\n')
+        appendIndent(blockSource)
+        append(blockSource, 'end\n')
       end
     end
 
-    insert(source, 1, format('local %s\n', table.concat(scope, ', ')))
-    return table.concat(source)
+    insert(blockSource, 1, getIndent())
+    insert(blockSource, 2, format('local %s\n', table.concat(scope, ', ')))
+
+    append(source, table.concat(blockSource))
+
+    return true
   end
 
-  return compileBlock(tree, 0)
+
+  local source = {}
+  compileBlock(tree, source)
+  return concat(source)
 end
 
 
