@@ -295,14 +295,14 @@ local function translate(tree)
         right = right[1]
       end
 
-      insert(block, { type = 'assign-expression', left, op, right })
+      insert(block, { type = 'assign-statement', left, op, right })
       return true
     end
   end
 
   function translateCondition(node, block)
     if node.type == 'if-expression' then
-      insert(block, node)
+      insert(block, { type = 'if-statement', unpack(node) })
       return true
     end
   end
@@ -317,6 +317,25 @@ local function translate(tree)
       end
     end
 
+    local scope = {}
+    for i, node in ipairs(blockOutput) do
+      if node.type == 'assign-statement' then
+        local left = node[1]
+        local name = left[1]
+
+        if not scope[name] then
+          insert(scope, name)
+          scope[name] = true
+        end
+      end
+    end
+
+    insert(blockOutput, 1, {
+      type = 'local-statement',
+      {
+        type = 'names', unpack(scope)
+      },
+    })
 
     return blockOutput
   end
