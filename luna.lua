@@ -3,34 +3,40 @@ local function parse(content)
   local pos = 1
   local tokens = {}
 
+  local singleops = ('[ + - * / % ^ # & ~ | < > = ( ) { } [ ] : ; , .]'):gsub(' ', '%%') -- just to make things readable
+
+  local function match(pattern, tokenType)
+    local start, value = content:match('()(' .. pattern .. ')', pos)
+    if start == pos then
+      if tokenType then
+        table.insert(tokens, { type = tokenType, value = value })
+      end
+      print(pos, value)
+      pos = pos + #value
+      return true
+    end
+    return false
+  end
+
   while pos <= #content do
     repeat
-      local char = content:sub(pos, pos)
-
       -- whitespace
-      local space = char:match('%s')
-      if space then
-        pos = pos + 1
-        break
-      end
+      if match('%s+')
 
-      -- decimals
-      local start, number = content:match('()(%d*%.?%d+)')
-      if number and start == pos then
-        table.insert(tokens, { type = 'number', value = number })
-        pos = pos + #number
-        break
-      end
+      -- numbers
+      or match('0x[0-9a-fA-F]+', 'number') -- hex
+      or match('%d*%.?%d+', 'number') -- decimal
 
-      -- hex
-      local start, number = content:match('()(0x[0-9a-fA-F]+)')
-      if number and start == pos then
-        table.insert(tokens, { type = 'number', value = number })
-        pos = pos + #number
-        break
-      end
+      -- symbols
+      or match(singleops, 'symbol')
+      or match('>>', 'symbol') or match('<<', 'symbol') or match('//', 'symbol')
+      or match('==', 'symbol') or match('~=', 'symbol') or match('<=', 'symbol') or match('>=', 'symbol')
+      or match('%.%.', 'symbol') or match('%.%.%.', 'symbol')
 
-      error(('unexpected character %q at position %d'):format(char, pos), 0)
+      -- that short circuit tho
+      then break end
+
+      error(('unexpected character %q at position %d'):format(content:sub(pos, pos), pos), 0)
     until true
   end
 
