@@ -270,27 +270,55 @@ end
 
 
 local function translate(tree)
+  local translateExpression
+  local translateAssign
+  local translateCondition
+  local translateBlock
 
-  local function translateAssign(node, block)
+  function translateExpression(node, block)
+    if node.type == 'name' or node.type == 'constant' then
+      translateAssign({
+        type = 'assign-expression',
+        { type = 'name', '_' },
+        '=',
+        node,
+      }, block)
+      return true
+    end
+  end
+
+  function translateAssign(node, block)
     if node.type == 'assign-expression' then
       local left, op, right = unpack(node)
 
-      if right.type == 'assign-expression' then
-        translateAssign(right, block)
+      if translateAssign(right, block) then
         right = right[1]
       end
 
       insert(block, { type = 'assign-expression', left, op, right })
+      return true
     end
   end
 
-  local function translateBlock(block)
-    local translated = { type = 'block' }
+  function translateCondition(node, block)
+    if node.type == 'if-expression' then
+      insert(block, node)
+      return true
+    end
+  end
+
+  function translateBlock(block)
+    local blockOutput = { type = 'block' }
+
     for i, node in ipairs(block) do
-      if translateAssign(node, translated) then
+      if translateAssign(node, blockOutput)
+      or translateCondition(node, blockOutput)
+      or translateExpression(node, blockOutput) then
       end
     end
-    return translated
+
+
+    return blockOutput
   end
 
   return translateBlock(tree)
@@ -305,4 +333,5 @@ local tree = parse(tokens)
 local translated = translate(tree)
 
 -- print(inspect(tokens))
+dump(tree)
 dump(translated)
