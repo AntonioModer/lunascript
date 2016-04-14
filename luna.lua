@@ -1,3 +1,4 @@
+local inspect = require 'inspect'
 
 local function tokenize(content)
   local pos = 1
@@ -102,6 +103,10 @@ end
 local function parse(tokens)
   local pos = 1
 
+  local function isValue(token)
+    return token and (token.type == 'literal' or token.type == 'identifier')
+  end
+
   local function walk()
     local token = tokens[pos]
 
@@ -109,28 +114,43 @@ local function parse(tokens)
       local operator = token
       local value = tokens[pos + 1]
 
-      if value.type == 'literal'
-      or value.type == 'identifier' then
+      if isValue(value) then
         pos = pos + 2
-        return { type = 'unaryexpression', operator = token.value, value = value.value }
+        return { type = 'unary-expression', operator = token, value = value }
       else
-        error('expected literal or identifier after unary operator ' .. operator.value .. ' at position ' .. operator.position)
+        error('expected literal or identifier after unary operator ' .. operator.value .. ' at position ' .. operator.position, 0)
       end
     end
 
-    if token.type == 'literal' or token.type == 'identifier' then
+    if isValue(token) then
+      if tokens[pos + 1] and tokens[pos + 1].type == 'binary' then
+        local left = token
+        local operator = tokens[pos + 1]
+        local right
+
+        pos = pos + 2
+
+        return {
+          type = 'binary-expression',
+          left = left,
+          operator = operator,
+          right = walk(),
+        }
+      end
+
       pos = pos + 1
-      return { type = 'value', value = token.value }
+      return { type = 'value', value = token }
     end
   end
 
   local tree = {
-    type = 'Program',
+    type = 'program',
     body = {},
   }
 
   while pos <= #tokens do
-    table.insert(tree.body, walk())
+    local node = walk()
+    table.insert(tree.body, node)
   end
 
   return tree
@@ -140,7 +160,8 @@ end
 local path = ...
 local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 
-local ast = parse(tokenize(content))
+local tokens = tokenize(content)
+local tree = parse(tokens)
 
-local inspect = require 'inspect'
-print(inspect(ast))
+-- print(inspect(tokens))
+print(inspect(tree))
