@@ -1,0 +1,3 @@
+cmd: 'lua'
+args: ['luna.lua', 'test.luna']
+sh: true
