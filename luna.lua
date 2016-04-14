@@ -9,9 +9,8 @@ local function parse(content)
     local start, value = content:match('()(' .. pattern .. ')', pos)
     if start == pos then
       if tokenType then
-        table.insert(tokens, { type = tokenType, value = value })
+        table.insert(tokens, { type = tokenType, value = value, position = pos })
       end
-      print(pos, value)
       pos = pos + #value
       return true
     end
@@ -19,25 +18,79 @@ local function parse(content)
   end
 
   while pos <= #content do
-    repeat
+    if not (
       -- whitespace
-      if match('%s+')
+      match('%s+')
+
+      -- multiline comments
+      or match('%-%-%[%[.-%]%]', 'comment')
+
+      -- single line comments
+      or match('%-%-[^\r\n]*', 'comment')
 
       -- numbers
       or match('0x[0-9a-fA-F]+', 'number') -- hex
       or match('%d*%.?%d+', 'number') -- decimal
 
+
+      -- keywords
+      or match('do', 'keyword')
+      or match('end', 'keyword')
+      or match('goto', 'keyword')
+      or match('local', 'keyword')
+
+      or match('true', 'keyword')
+      or match('false', 'keyword')
+      or match('nil', 'keyword')
+
+      or match('and', 'keyword')
+      or match('or', 'keyword')
+      or match('not', 'keyword')
+
+      or match('if', 'keyword')
+      or match('else', 'keyword')
+      or match('elseif', 'keyword')
+      or match('then', 'keyword')
+
+      or match('for', 'keyword')
+      or match('in', 'keyword')
+      or match('while', 'keyword')
+      or match('repeat', 'keyword')
+      or match('until', 'keyword')
+      or match('break', 'keyword')
+
+      or match('function', 'keyword')
+      or match('return', 'keyword')
+
+
+      -- strings
+      or match('%b""', 'string')
+      or match("%b''", 'string')
+      or match('%[%[.-%]%]', 'string')
+
+      -- identifiers
+      or match('[%w_][%a_]*', 'identifier')
+
+
       -- symbols
       or match(singleops, 'symbol')
-      or match('>>', 'symbol') or match('<<', 'symbol') or match('//', 'symbol')
-      or match('==', 'symbol') or match('~=', 'symbol') or match('<=', 'symbol') or match('>=', 'symbol')
-      or match('%.%.', 'symbol') or match('%.%.%.', 'symbol')
 
-      -- that short circuit tho
-      then break end
+      or match('>>', 'symbol')
+      or match('<<', 'symbol')
+      or match('//', 'symbol')
 
+      or match('==', 'symbol')
+      or match('~=', 'symbol')
+      or match('<=', 'symbol')
+      or match('>=', 'symbol')
+
+      or match('%.%.', 'symbol')
+      or match('%.%.%.', 'symbol')
+
+    -- lol short circuit abuse
+    ) then
       error(('unexpected character %q at position %d'):format(content:sub(pos, pos), pos), 0)
-    until true
+    end
   end
 
   return tokens
