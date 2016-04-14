@@ -281,21 +281,37 @@ local function compile(tree)
     insert(to, format(content, ...))
   end
 
+
+  local function compileExpression(node)
+    if node.type == 'name' or node.type == 'constant' then
+      return node[1]
+    elseif node.type == 'binary-expression' then
+      local left, op, right = unpack(node)
+      return format('%s %s %s', compileExpression(left), op:gsub('%s', ''), compileExpression(right))
+    end
+  end
+
+  local function compileAssign(node)
+    local left, op, right = unpack(node)
+    return format('%s %s %s\n', left[1], op, compileExpression(right)), left
+  end
+
   local function compileBlock(block)
     local source = {}
     local scope = {}
 
     for i, node in ipairs(block) do
       if node.type == 'assign-expression' then
-        local left, op, right = unpack(node)
+        local content, names = compileAssign(node)
 
-        local name = left[1]
-        if not scope[name] then
-          insert(scope, name)
-          scope[name] = true
+        for i, name in ipairs(names) do
+          if not scope[name] then
+            insert(scope, name)
+            scope[name] = true
+          end
         end
 
-        append(source, '%s %s %s\n', left[1], op, right[1])
+        append(source, content)
       elseif node.type == 'block' then
         append(source, 'do\n')
 

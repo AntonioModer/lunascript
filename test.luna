@@ -1,13 +1,2 @@
-hello = 'world'
-ten = '5 + 5'
-ten = 10
-
-zero = '1 + 2 - 3'
-
-do
-  something = 'fun'
-
-  do
-    more = 'stuff'
-  end
-end
+ten = 2 * 8 - 6
+twenty = 100 / 10 * 2
