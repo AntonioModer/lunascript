@@ -2,7 +2,6 @@ local inspect = require 'inspect'
 
 local function dump(node, indent)
   indent = indent or 0
-
   print(string.rep('   ', indent) .. node.type .. ':')
   for i=1, #node do
     if type(node[i]) == 'table' then
@@ -265,17 +264,35 @@ local function parse(tokens)
   return tree
 end
 
+local format = string.format
 
-local function compile(tree)
+local function compile(block, indent)
+  indent = indent or 0
   local source = {}
+  local scope = {}
 
-  local function append(...)
-    for i=1, select('#', ...) do
-      table.insert(source, select(i, ...))
+  for i, node in ipairs(block) do
+    if node.type == 'assign-expression' then
+      local left, op, right = unpack(node)
+      local name = left[1]
+
+      if not scope[name] then
+        table.insert(scope, name)
+        scope[name] = true
+      end
+
+      table.insert(source, format('%s %s %s', left[1], op, right[1]))
+    elseif node.type == 'block' then
+      table.insert(source, 'do')
+      table.insert(source, compile(node, indent + 1))
+      table.insert(source, 'end')
     end
   end
 
-  return source.concat('\n')
+  table.insert(source, 1, format('local %s', table.concat(scope, ', ')))
+
+  local spaces = string.rep('  ', indent)
+  return spaces .. table.concat(source, '\n' .. spaces)
 end
 
 
@@ -284,6 +301,8 @@ local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 
 local tokens = tokenize(content)
 local tree = parse(tokens)
+local out = compile(tree)
 
 -- print(inspect(tokens))
 dump(tree)
+print(out)

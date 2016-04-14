@@ -1,1 +1,9 @@
-abc = 123
+hello = 'world'
+ten = '5 + 5'
+ten = 10
+
+zero = '1 + 2 - 3'
+
+do
+  something = 'fun'
+end
