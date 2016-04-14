@@ -44,13 +44,18 @@ local function tokenize(content)
       or match('%-%-[^\r\n]*')
 
       -- numbers
-      or match('0x[0-9a-fA-F]+', 'literal') -- hex
-      or match('%d*%.?%d+', 'literal') -- decimal
+      or match('0x[0-9a-fA-F]+', 'constant') -- hex
+      or match('%d*%.?%d+', 'constant') -- decimal
+
+      -- strings
+      or match('%b""', 'constant') --TODO: account for quote escapes
+      or match("%b''", 'constant')
+      or match('%[%[.-%]%]', 'constant')
 
       -- keywords
-      or match('true%s', 'literal')
-      or match('false%s', 'literal')
-      or match('nil%s', 'literal')
+      or match('true%s', 'constant')
+      or match('false%s', 'constant')
+      or match('nil%s', 'constant')
 
       or match('and%s', 'binary')
       or match('or%s', 'binary')
@@ -76,11 +81,6 @@ local function tokenize(content)
       -- names
       or match('[%w_][%a_]*', 'name')
 
-      -- strings
-      or match('%b""', 'literal') --TODO: account for quote escapes
-      or match("%b''", 'literal')
-      or match('%[%[.-%]%]', 'literal')
-
       -- symbols
       or match('>>', 'binary')
       or match('<<', 'binary')
@@ -91,7 +91,7 @@ local function tokenize(content)
       or match('<=', 'binary')
       or match('>=', 'binary')
 
-      or match('%.%.%.', 'literal')
+      or match('%.%.%.', 'constant')
       or match('%.%.', 'binary')
 
       or match('%-%s+', 'binary')
@@ -117,19 +117,32 @@ local function parse(tokens)
     return unpack(tokens, pos)
   end
 
+  local parseName
+  local parseConstant
   local parseLiteral
   local parseUnary
   local parseBinary
   local parseBlock
   local parseExpression
 
+  function parseName()
+    local token = current()
+    if token.type == 'name' then
+      pos = pos + 1
+      return { type = 'name', token.value }
+    end
+  end
+
+  function parseConstant()
+    local token = current()
+    if token.type == 'constant' then
+      pos = pos + 1
+      return { type = 'constant', token.value }
+    end
+  end
 
   function parseLiteral()
-    local token = current()
-    if token.type == 'name' or token.type == 'literal' then
-      pos = pos + 1
-      return token.value
-    end
+    return parseName() or parseConstant()
   end
 
   function parseUnary()
@@ -223,6 +236,19 @@ local function parse(tokens)
   end
 
   return tree
+end
+
+
+local function compile(tree)
+  local source = {}
+
+  local function append(...)
+    for i=1, select('#', ...) do
+      table.insert(source, select(i, ...))
+    end
+  end
+
+  return source.concat('\n')
 end
 
 
