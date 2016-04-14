@@ -98,13 +98,15 @@ local function tokenize(content)
       or match('[%+%*%/%%%^%&%|%<%>]', 'binary')
       or match('[%~%-%#]', 'unary')
 
-      or match('=', 'assignment')
+      or match('=', 'assign')
 
     -- lol short circuit abuse
     ) then
       error(('unexpected character %q at position %d'):format(content:sub(pos, pos), pos), 0)
     end
   end
+
+  table.insert(tokens, { type = 'eof', value = '(eof)', position = #content })
 
   return tokens
 end
@@ -121,9 +123,11 @@ local function parse(tokens)
   local parseConstant
   local parseLiteral
   local parseUnary
+  local parseAssign
   local parseBinary
   local parseBlock
   local parseExpression
+  local parseEOF
 
   function parseName()
     local token = current()
@@ -153,11 +157,24 @@ local function parse(tokens)
     end
   end
 
+  function parseAssign()
+    local name = parseName()
+    if name then
+      local op = current()
+      if op.type == 'assign' then
+        pos = pos + 1
+        return { type = 'assign-expression', name, op.value, parseExpression() }
+      else
+        return name
+      end
+    end
+  end
+
   function parseBinary()
     local left = parseUnary() or parseLiteral()
     local op = current()
 
-    if op and op.type == 'binary' then
+    if op.type == 'binary' then
       pos = pos + 1
       return { type = 'binary-expression', left, op.value, parseExpression() }
     else
@@ -225,11 +242,21 @@ local function parse(tokens)
 
     return parseBlock()
     or parseCondition()
+    or parseAssign()
     or parseBinary()
+    or parseEOF()
     or error(('unexpected token %q at char %d'):format(token.value, token.position), 0)
   end
 
-  local tree = { type = 'script' }
+  function parseEOF()
+    local token = current()
+    if token.type == 'eof' then
+      pos = pos + 1
+      return { type = 'eof' }
+    end
+  end
+
+  local tree = { type = 'block' }
 
   while pos <= #tokens do
     table.insert(tree, parseExpression())
