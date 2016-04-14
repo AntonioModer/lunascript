@@ -268,84 +268,32 @@ local function parse(tokens)
   return tree
 end
 
-local function compile(tree)
-  local indent = 0
 
-  local function getIndent()
-    return ('  '):rep(indent)
-  end
+local function translate(tree)
 
-  local function appendIndent(to)
-    insert(to, getIndent())
-  end
+  local function translateAssign(node, block)
+    if node.type == 'assign-expression' then
+      local left, op, right = unpack(node)
 
-  local function append(to, content, ...)
-    insert(to, format(content, ...))
-  end
+      if right.type == 'assign-expression' then
+        translateAssign(right, block)
+        right = right[1]
+      end
 
-
-  local function compileLiteral(node, source)
-    append(source, node[1])
-  end
-
-  local function compileAssign(node, source, scope)
-    local left, op, right = unpack(node)
-
-    if right.type == 'assign-expression' then
-      compileAssign(right, source, scope)
-      right = right[1]
-    end
-
-    appendIndent(source)
-    if left.type == 'name' then
-      compileLiteral(left, source)
-    end
-    append(source, ' %s ', op)
-    if right.type == 'name' or right.type == 'constant' then
-      compileLiteral(right, source)
-    end
-    append(source, '\n')
-
-
-    local name = left[1]
-    if not scope[name] then
-      insert(scope, name)
-      scope[name] = true
+      insert(block, { type = 'assign-expression', left, op, right })
     end
   end
 
-  local function compileBlock(block, source)
-    local scope = {}
-    local blockSource = {}
-
+  local function translateBlock(block)
+    local translated = { type = 'block' }
     for i, node in ipairs(block) do
-      if node.type == 'assign-expression' then
-        compileAssign(node, blockSource, scope)
-      elseif node.type == 'block' then
-        appendIndent(blockSource)
-        append(blockSource, 'do\n')
-
-        indent = indent + 1
-        compileBlock(node, blockSource)
-        indent = indent - 1
-
-        appendIndent(blockSource)
-        append(blockSource, 'end\n')
+      if translateAssign(node, translated) then
       end
     end
-
-    insert(blockSource, 1, getIndent())
-    insert(blockSource, 2, format('local %s\n', table.concat(scope, ', ')))
-
-    append(source, table.concat(blockSource))
-
-    return true
+    return translated
   end
 
-
-  local source = {}
-  compileBlock(tree, source)
-  return concat(source)
+  return translateBlock(tree)
 end
 
 
@@ -354,8 +302,7 @@ local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 
 local tokens = tokenize(content)
 local tree = parse(tokens)
-local out = compile(tree)
+local translated = translate(tree)
 
 -- print(inspect(tokens))
-dump(tree)
-print(out)
+dump(translated)
