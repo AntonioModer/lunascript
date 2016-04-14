@@ -149,9 +149,24 @@ local function parse(tokens)
   return tree
 end
 
+local function dump(node, indent)
+  indent = indent or 0
+
+  print(string.rep('  ', indent) .. node.type .. ':')
+  for i=1, #node do
+    if type(node[i]) == 'table' then
+      dump(node[i], indent + 1)
+    else
+      print(string.rep('  ', indent + 1) .. tostring(node[i]))
+    end
+  end
+end
+
 
 local path = ...
 local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 
 local tokens = tokenize(content)
 local tree = parse(tokens)
+
+dump(tree)
