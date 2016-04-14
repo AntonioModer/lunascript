@@ -1,10 +1,12 @@
-number = randomNumber
-
-guess = getInput
-if guess > number do
-  tooHigh
-end else if guess < number do
-  tooLow
-end else do
-  winrar
+if var > limit
+  stuff
+  morestuff
+elseif var < limit
+  notasmuchstuff
+  alittlestuff
+else
+  insideelse
+  happyelse
 end
+
+more + stuff

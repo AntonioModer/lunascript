@@ -3,12 +3,12 @@ local inspect = require 'inspect'
 local function dump(node, indent)
   indent = indent or 0
 
-  print(string.rep('  ', indent) .. node.type .. ':')
+  print(string.rep('   ', indent) .. node.type .. ':')
   for i=1, #node do
     if type(node[i]) == 'table' then
       dump(node[i], indent + 1)
     else
-      print(string.rep('  ', indent + 1) .. tostring(node[i]))
+      print(string.rep('   ', indent + 1) .. tostring(node[i]))
     end
   end
 end
@@ -47,38 +47,34 @@ local function tokenize(content)
       or match('0x[0-9a-fA-F]+', 'literal') -- hex
       or match('%d*%.?%d+', 'literal') -- decimal
 
-
       -- keywords
-      or match('true', 'literal')
-      or match('false', 'literal')
-      or match('nil', 'literal')
+      or match('true%s', 'literal')
+      or match('false%s', 'literal')
+      or match('nil%s', 'literal')
 
-      or match('and', 'binary')
-      or match('or', 'binary')
-      or match('not', 'unary')
+      or match('and%s', 'binary')
+      or match('or%s', 'binary')
+      or match('not%s', 'unary')
 
-      or match('do', 'control')
-      or match('end', 'control')
-      or match('goto', 'control')
-      or match('local', 'control')
+      or match('do%s', 'do')
+      or match('end%s', 'end')
+      or match('goto%s', 'goto')
+      or match('local%s', 'local')
+      or match('if%s', 'if')
+      or match('else%s', 'else')
+      or match('elseif%s', 'elseif')
+      or match('then%s', 'then')
+      or match('for%s', 'for')
+      or match('in%s', 'in')
+      or match('while%s', 'while')
+      or match('repeat%s', 'repeat')
+      or match('until%s', 'until')
+      or match('break%s', 'break')
+      or match('function%s', 'function')
+      or match('return%s', 'return')
 
-      or match('if', 'control')
-      or match('else', 'control')
-      or match('elseif', 'control')
-      or match('then', 'control')
-
-      or match('for', 'control')
-      or match('in', 'control')
-      or match('while', 'control')
-      or match('repeat', 'control')
-      or match('until', 'control')
-      or match('break', 'control')
-
-      or match('function', 'control')
-      or match('return', 'control')
-
-      -- identifiers
-      or match('[%w_][%a_]*', 'identifier')
+      -- names
+      or match('[%w_][%a_]*', 'name')
 
       -- strings
       or match('%b""', 'literal') --TODO: account for quote escapes
@@ -95,12 +91,14 @@ local function tokenize(content)
       or match('<=', 'binary')
       or match('>=', 'binary')
 
-      or match('%.%.', 'binary')
       or match('%.%.%.', 'literal')
+      or match('%.%.', 'binary')
 
       or match('%-%s+', 'binary')
-      or match('[%+%*%/%%%^%&%|%<%>%=]', 'binary')
+      or match('[%+%*%/%%%^%&%|%<%>]', 'binary')
       or match('[%~%-%#]', 'unary')
+
+      or match('=', 'assignment')
 
     -- lol short circuit abuse
     ) then
@@ -115,79 +113,113 @@ end
 local function parse(tokens)
   local pos = 1
 
-  local function isValue(token)
-    return token and (token.type == 'literal' or token.type == 'identifier')
+  local function current()
+    return unpack(tokens, pos)
   end
 
-  local function walk()
-    local token = tokens[pos]
+  local parseLiteral
+  local parseUnary
+  local parseBinary
+  local parseBlock
+  local parseExpression
 
-    if token.type == 'control' then
-      if token.value == 'do' then
-        local block = { type = 'block' }
 
-        pos = pos + 1
-        while tokens[pos].value ~= 'end' do
-          local expression = walk()
-          table.insert(block, expression)
-        end
-
-        pos = pos + 1
-        return block
-      end
-
-      if token.value == 'if' then
-        pos = pos + 1
-        local condition = walk()
-        local pass = walk()
-        local fail
-
-        token = tokens[pos]
-        if token and token.type == 'control' and token.value == 'else' then
-          pos = pos + 1
-          fail = walk()
-        end
-
-        return { type = 'conditional-expression', condition, pass, fail }
-      end
+  function parseLiteral()
+    local token = current()
+    if token.type == 'name' or token.type == 'literal' then
+      pos = pos + 1
+      return token.value
     end
+  end
 
-    if token.type == 'unary' then
-      local operator = token
-      local value = tokens[pos + 1]
-
-      if isValue(value) then
-        pos = pos + 1
-        return { type = 'unary-expression', operator.value, walk() }
-      else
-        error('expected literal or identifier after unary operator ' .. operator.value .. ' at position ' .. operator.position, 0)
-      end
+  function parseUnary()
+    local op = current()
+    if op.type == 'unary' then
+      pos = pos + 1
+      return { type = 'unary-expression', op.value, parseLiteral() }
     end
+  end
 
-    if isValue(token) then
-      if tokens[pos + 1] and tokens[pos + 1].type == 'binary' then
-        local left = token
-        local operator = tokens[pos + 1]
-        local right
+  function parseBinary()
+    local left = parseUnary() or parseLiteral()
+    local op = current()
 
-        pos = pos + 2
+    if op and op.type == 'binary' then
+      pos = pos + 1
+      return { type = 'binary-expression', left, op.value, parseExpression() }
+    else
+      return left
+    end
+  end
 
-        return { type = 'binary-expression', left.value, operator.value, walk() }
+  function parseBlock()
+    local token = current()
+    if token.type == 'do' then
+      local node = { type = 'block' }
+      pos = pos + 1
+
+      local sub = current()
+      while sub.type ~= 'end' do
+        table.insert(node, parseExpression())
+        sub = current()
+        if not sub then
+          error('expected "end" to "do" at position ' .. token.position, 0)
+        end
       end
 
       pos = pos + 1
-      return token.value --{ type = 'value', token }
+      return node
     end
-
-    error(('unexpected token %q at position %d'):format(token.value, token.position))
   end
 
-  local tree = {
-    type = 'script',
-  }
+  function parseCondition()
+    local token = current()
+    if token.type == 'if' then
+      pos = pos + 1
+
+      local node = { type = 'if-expression' }
+
+      local condition = { type = 'if', parseExpression() }
+      table.insert(node, condition)
+
+      local sub = current()
+      while sub.type ~= 'end' do
+        table.insert(condition, parseExpression())
+
+        sub = current()
+        if sub then
+          if sub.type == 'elseif' then
+            pos = pos + 1
+            condition = { type = 'if', parseExpression() }
+            table.insert(node, condition)
+          elseif sub.type == 'else' then
+            pos = pos + 1
+            condition = { type = 'else' }
+            table.insert(node, condition)
+          end
+        else
+          error('expected "end" to "if" at position ' .. token.position, 0)
+        end
+      end
+
+      pos = pos + 1
+      return node
+    end
+  end
+
+  function parseExpression()
+    local token = current()
+
+    return parseBlock()
+    or parseCondition()
+    or parseBinary()
+    or error(('unexpected token %q at char %d'):format(token.value, token.position), 0)
+  end
+
+  local tree = { type = 'script' }
 
   while pos <= #tokens do
-    table.insert(tree, walk())
+    table.insert(tree, parseExpression())
   end
 
   return tree
