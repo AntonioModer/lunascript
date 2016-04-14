@@ -136,14 +136,13 @@ local function parse(tokens)
         pos = pos + 1
         return block
       end
-      -- if token.value == 'if' then
-      --   pos = pos + 1
-      --   local node = { type = 'conditional-expression', walk() }
-      --
-      --
-      --
-      --   return node
-      -- end
+
+      if token.value == 'if' then
+        pos = pos + 1
+        local condition = walk()
+        local pass = walk()
+        return { type = 'conditional-expression', condition, pass }
+      end
     end
 
     if token.type == 'unary' then

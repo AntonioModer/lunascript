@@ -1,6 +1,7 @@
-do
-  hello = world
-  butt = nugget
-end
+if true or false
+  pass
 
-no = loop
+if otherwise
+  fail
+
+test + here
