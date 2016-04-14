@@ -6,4 +6,8 @@ zero = '1 + 2 - 3'
 
 do
   something = 'fun'
+
+  do
+    more = 'stuff'
+  end
 end

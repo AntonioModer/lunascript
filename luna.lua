@@ -1,5 +1,8 @@
 local inspect = require 'inspect'
 
+local insert = table.insert
+local format = string.format
+
 local function dump(node, indent)
   indent = indent or 0
   print(string.rep('   ', indent) .. node.type .. ':')
@@ -22,7 +25,7 @@ local function tokenize(content)
     local start, value = content:match('()(' .. pattern .. ')', pos)
     if start == pos then
       if tokenType then
-        table.insert(tokens, { type = tokenType, value = value, position = pos })
+        insert(tokens, { type = tokenType, value = value, position = pos })
       end
       pos = pos + #value
       return true
@@ -105,7 +108,7 @@ local function tokenize(content)
     end
   end
 
-  table.insert(tokens, { type = 'eof', value = '(eof)', position = #content })
+  insert(tokens, { type = 'eof', value = '(eof)', position = #content })
 
   return tokens
 end
@@ -189,7 +192,7 @@ local function parse(tokens)
 
       local sub = current()
       while sub.type ~= 'end' do
-        table.insert(node, parseExpression())
+        insert(node, parseExpression())
         sub = current()
         if not sub then
           error('expected "end" to "do" at position ' .. token.position, 0)
@@ -209,22 +212,22 @@ local function parse(tokens)
       local node = { type = 'if-expression' }
 
       local condition = { type = 'if', parseExpression() }
-      table.insert(node, condition)
+      insert(node, condition)
 
       local sub = current()
       while sub.type ~= 'end' do
-        table.insert(condition, parseExpression())
+        insert(condition, parseExpression())
 
         sub = current()
         if sub then
           if sub.type == 'elseif' then
             pos = pos + 1
             condition = { type = 'if', parseExpression() }
-            table.insert(node, condition)
+            insert(node, condition)
           elseif sub.type == 'else' then
             pos = pos + 1
             condition = { type = 'else' }
-            table.insert(node, condition)
+            insert(node, condition)
           end
         else
           error('expected "end" to "if" at position ' .. token.position, 0)
@@ -258,41 +261,52 @@ local function parse(tokens)
   local tree = { type = 'block' }
 
   while pos <= #tokens do
-    table.insert(tree, parseExpression())
+    insert(tree, parseExpression())
   end
 
   return tree
 end
 
-local format = string.format
-
-local function compile(block, indent)
-  indent = indent or 0
-  local source = {}
-  local scope = {}
-
-  for i, node in ipairs(block) do
-    if node.type == 'assign-expression' then
-      local left, op, right = unpack(node)
-      local name = left[1]
-
-      if not scope[name] then
-        table.insert(scope, name)
-        scope[name] = true
-      end
-
-      table.insert(source, format('%s %s %s', left[1], op, right[1]))
-    elseif node.type == 'block' then
-      table.insert(source, 'do')
-      table.insert(source, compile(node, indent + 1))
-      table.insert(source, 'end')
-    end
+local function compile(tree)
+  local function getIndent(indentLevel)
+    return ('  '):rep(indentLevel)
   end
 
-  table.insert(source, 1, format('local %s', table.concat(scope, ', ')))
+  local function append(to, indentLevel, content, ...)
+    if indentLevel > 0 then
+      insert(to, getIndent(indentLevel))
+    end
+    insert(to, format(content, ...))
+  end
 
-  local spaces = string.rep('  ', indent)
-  return spaces .. table.concat(source, '\n' .. spaces)
+  local function compileBlock(block, indentLevel)
+    local source = {}
+    local scope = {}
+
+    for i, node in ipairs(block) do
+      if node.type == 'assign-expression' then
+        local left, op, right = unpack(node)
+
+        local name = left[1]
+        if not scope[name] then
+          insert(scope, name)
+          scope[name] = true
+        end
+
+        append(source, indentLevel, '%s %s %s\n', left[1], op, right[1])
+      elseif node.type == 'block' then
+        append(source, indentLevel, 'do\n')
+        append(source, 0, compileBlock(node, indentLevel + 1))
+        append(source, indentLevel, 'end\n')
+      end
+    end
+
+    insert(source, 1, getIndent(indentLevel))
+    insert(source, 2, format('local %s\n', table.concat(scope, ', ')))
+    return table.concat(source)
+  end
+
+  return compileBlock(tree, 0)
 end
 
 
