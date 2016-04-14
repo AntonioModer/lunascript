@@ -115,8 +115,8 @@ local function parse(tokens)
       local value = tokens[pos + 1]
 
       if isValue(value) then
-        pos = pos + 2
-        return { type = 'unary-expression', operator = token, value = value }
+        pos = pos + 1
+        return { type = 'unary-expression', operator.value, walk() }
       else
         error('expected literal or identifier after unary operator ' .. operator.value .. ' at position ' .. operator.position, 0)
       end
@@ -130,27 +130,20 @@ local function parse(tokens)
 
         pos = pos + 2
 
-        return {
-          type = 'binary-expression',
-          left = left,
-          operator = operator,
-          right = walk(),
-        }
+        return { type = 'binary-expression', left.value, operator.value, walk() }
       end
 
       pos = pos + 1
-      return { type = 'value', value = token }
+      return token.value --{ type = 'value', token }
     end
   end
 
   local tree = {
     type = 'program',
-    body = {},
   }
 
   while pos <= #tokens do
-    local node = walk()
-    table.insert(tree.body, node)
+    table.insert(tree, walk())
   end
 
   return tree
@@ -162,6 +155,3 @@ local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 
 local tokens = tokenize(content)
 local tree = parse(tokens)
-
--- print(inspect(tokens))
-print(inspect(tree))
