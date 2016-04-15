@@ -41,12 +41,12 @@ return function(tree)
       local statement = { type = 'if-statement' }
 
       for i, clause in ipairs(expression) do
-        if clause.type == 'if-clause' then
-          local translated = { type = 'if-clause' }
+        if clause.type == 'if-clause' or clause.type == 'elseif-clause' then
+          local translated = { type = clause.type }
           local condition, clauseBlock = unpack(clause)
 
-          local conditionexp = translateExpression(condition, block)
-          insert(translated, conditionexp)
+          local conditionExpression = translateExpression(condition, block)
+          insert(translated, conditionExpression)
           translateBlock(clauseBlock, translated)
           insert(statement, translated)
 

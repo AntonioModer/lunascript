@@ -95,43 +95,37 @@ return function(tokens)
   function parseCondition()
     local token = current()
     if token.type == 'if' then
-      pos = pos + 1
+      local node = { type = 'if-expression' }
 
-      local head = { type = 'if-expression' }
+      while true do
+        local sub = current()
 
-      local node = head
-      local condition = { type = 'if-clause', parseExpression() }
-      local block = { type = 'block' }
-      insert(condition, block)
-      insert(node, condition)
+        if not sub then
+          error('expected "end" to "if" (at position ' .. token.position .. ')', 0)
+        end
 
-      local sub = current()
-      while sub.type ~= 'end' and sub.type ~= '' do
-        insert(block, parseExpression())
+        if sub.type == 'if' or sub.type == 'elseif' then
+          pos = pos + 1
+          local condition = parseExpression()
+          local block = { type = 'block' }
+          local clause = { type = sub.type .. '-clause', condition, block }
 
-        sub = current()
-        if sub then
-          if sub.type == 'elseif' then
-            local elseClause = { type = 'else-clause' }
-            local elseBlock = { type = 'block' }
-            insert(elseClause, elseBlock)
-            insert(node, elseClause)
-
-            pos = pos + 1
-            node = { type = 'if-expression' }
-            condition = { type = 'if-clause', parseExpression() }
-            block = { type = 'block' }
-            insert(condition, block)
-            insert(node, condition)
-            insert(elseBlock, node)
+          while true do
+            local sub = current()
+            if not sub then break end
+            if sub.type == 'elseif' then break end
+            if sub.type == 'end' then break end
+            insert(block, parseExpression())
           end
-        else
-          error('expected "end" to "if" at position ' .. token.position, 0)
+
+          insert(node, clause)
+        elseif sub.type == 'end' then
+          break
         end
       end
 
       pos = pos + 1
-      return head
+      return node
     end
   end
 
