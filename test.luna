@@ -1,8 +1,9 @@
 if condition
-  stuff
-  morestuff
+  hello + world
+  a = b = c = 420
 elseif something_else
-  superstuff
+  nothing
+  'here'
 else
-  nostuff
+  fail
 end

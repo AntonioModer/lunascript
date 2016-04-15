@@ -208,27 +208,27 @@ local function parse(tokens)
   function parseCondition()
     local token = current()
     if token.type == 'if' then
-      pos = pos + 1
-
       local node = { type = 'if-expression' }
 
-      local condition = { type = 'if', parseExpression() }
+      pos = pos + 1
+
+      local condition = { type = 'if-clause', parseExpression() }
+      local block = { type = 'block' }
+      insert(condition, block)
       insert(node, condition)
 
       local sub = current()
       while sub.type ~= 'end' do
-        insert(condition, parseExpression())
+        insert(block, parseExpression())
 
         sub = current()
         if sub then
-          if sub.type == 'elseif' then
+          if sub.type == 'elseif' or sub.type == 'else' then
             pos = pos + 1
-            condition = { type = 'if', parseExpression() }
+            condition = { type = sub.type .. '-clause', sub.type == 'elseif' and parseExpression() or nil }
+            block = { type = 'block' }
             insert(node, condition)
-          elseif sub.type == 'else' then
-            pos = pos + 1
-            condition = { type = 'else' }
-            insert(node, condition)
+            insert(condition, block)
           end
         else
           error('expected "end" to "if" at position ' .. token.position, 0)
@@ -409,6 +409,6 @@ local output = compile(translated)
 
 -- print(content)
 -- print(inspect(tokens))
--- dump(tree)
-dump(translated)
+dump(tree)
+-- dump(translated)
 -- print(output)
