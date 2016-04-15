@@ -1,8 +1,1 @@
-
-if a = test1
-  pass1
-elseif a = test2
-  pass2
-elseif a = test3
-  pass3
-end
+hello = 'world'
