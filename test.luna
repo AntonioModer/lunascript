@@ -1,14 +1,7 @@
-if condition
-  hello + world
-  a = b = c = 420
-elseif something_else
-  nothing
-  'here'
+if a1 = test1
+  pass
+elseif a2 = test2
+  pass
 else
-  if nested_works
-    see_this
-    if even_more_nesting
-      holy shit
-    end
-  end
+  fail
 end
