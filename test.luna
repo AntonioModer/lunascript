@@ -5,5 +5,10 @@ elseif something_else
   nothing
   'here'
 else
-  fail
+  if nested_works
+    see_this
+    if even_more_nesting
+      holy shit
+    end
+  end
 end
