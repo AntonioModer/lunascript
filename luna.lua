@@ -307,15 +307,12 @@ local function translate(tree)
     if expression.type == 'if-expression' then
       local statement = { type = 'if-statement' }
 
-      for i, node in ipairs(expression) do
-        local case = { type = node.type, translateExpression(node[1], block) }
-
-        for i=2, #node do
-          translateExpression(node[i], case)
-        end
-
-        insert(statement, case)
-        -- localizeScope(case)
+      for i, clause in ipairs(expression) do
+        local translated = { type = clause.type }
+        local condition = clause.type ~= 'else-clause' and translateExpression(clause[1], block) or nil
+        insert(translated, condition)
+        translateBlock(clause[2] or clause[1], translated)
+        insert(statement, translated)
       end
 
       insert(block, statement)
@@ -378,18 +375,72 @@ end
 local function compile(translated)
   local source = {}
 
-  local function compileBlock(block)
+  local compileLocalAssign
+  local compileAssign
+  local compileConditional
+  local compileBlock
+  local compileExpression
+
+  function compileExpression(node)
+    if node.type == 'name'
+    or node.type == 'constant' then
+      insert(source, node[1])
+      return true
+    end
+  end
+
+  function compileLocalAssign(node)
+    if node.type == 'local-assign-statement' then
+      local names = node[1]
+      insert(source, format('local %s', concat(names, ', ')))
+      insert(source, '\n')
+      return true
+    end
+  end
+
+  function compileAssign(node)
+    if node.type == 'assign-statement' then
+      local names, expressions = unpack(node)
+      insert(source, format('%s', concat(names, ', ')))
+      insert(source, ' = ')
+      insert(source, format('%s', concat(expressions, ', ')))
+      insert(source, '\n')
+      return true
+    end
+  end
+
+  function compileConditional(node)
+    if node.type == 'if-statement' then
+      for i, clause in ipairs(node) do
+        if clause.type == 'if-clause' then
+          local condition, block = unpack(clause)
+          insert(source, 'if ')
+          compileExpression(condition)
+          insert(source, ' then\n')
+          compileBlock(block)
+        elseif clause.type == 'elseif-clause' then
+          local condition, block = unpack(clause)
+          insert(source, 'elseif ')
+          compileExpression(condition)
+          insert(source, ' then\n')
+          compileBlock(block)
+        elseif clause.type == 'else-clause' then
+          local block = unpack(clause)
+          insert(source, 'else\n')
+          compileBlock(block)
+        end
+      end
+
+      insert(source, 'end\n')
+      return true
+    end
+  end
+
+  function compileBlock(block)
     for i, node in ipairs(block) do
-      if node.type == 'local-assign-statement' then
-        local names = node[1]
-        insert(source, format('local %s', concat(names, ', ')))
-        insert(source, '\n')
-      elseif node.type == 'assign-statement' then
-        local names, expressions = unpack(node)
-        insert(source, format('%s', concat(names, ', ')))
-        insert(source, ' = ')
-        insert(source, format('%s', concat(expressions, ', ')))
-        insert(source, '\n')
+      if compileLocalAssign(node)
+      or compileAssign(node)
+      or compileConditional(node) then
       end
     end
   end
@@ -409,6 +460,6 @@ local output = compile(translated)
 
 -- print(content)
 -- print(inspect(tokens))
-dump(tree)
+-- dump(tree)
 -- dump(translated)
--- print(output)
+print(output)
