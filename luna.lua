@@ -270,20 +270,57 @@ end
 
 
 local function translate(tree)
+  local translated = {}
+
+  local varid = 0
+
   local translateExpression
-  local translateAssign
-  local translateCondition
   local translateBlock
+  local translateCondition
+  local translateAssign
+  local translateLiteral
+  local localizeScope
 
   function translateExpression(node, block)
-    if node.type == 'name' or node.type == 'constant' then
-      translateAssign({
-        type = 'assign-expression',
-        { type = 'name', '_' },
-        '=',
-        node,
-      }, block)
-      return true
+    return translateBlock(node, block)
+    or translateCondition(node, block)
+    or translateAssign(node, block)
+    or translateLiteral(node, block)
+  end
+
+  function translateBlock(node, parent)
+    if node.type == 'block' then
+      local block = { type = 'block' }
+
+      for i, sub in ipairs(node) do
+        if translateExpression(sub, block) then end
+      end
+
+      localizeScope(block)
+
+      insert(parent, block)
+      return block
+    end
+  end
+
+  function translateCondition(expression, block)
+    if expression.type == 'if-expression' then
+      local statement = { type = 'if-statement' }
+
+      for i, node in ipairs(expression) do
+        local case = { type = node.type, translateExpression(node[1], block) }
+
+        for i=2, #node do
+          translateExpression(node[i], case)
+        end
+
+        insert(statement, case)
+        -- localizeScope(case)
+      end
+
+      insert(block, statement)
+
+      return statement
     end
   end
 
@@ -295,32 +332,26 @@ local function translate(tree)
         right = right[1]
       end
 
-      insert(block, { type = 'assign-statement', left, right })
-      return true
+      local assign = { type = 'assign-statement', left, right }
+      insert(block, assign)
+      return left
     end
   end
 
-  function translateCondition(node, block)
-    if node.type == 'if-expression' then
-      insert(block, { type = 'if-statement', unpack(node) })
-      return true
+  function translateLiteral(node, block)
+    if node.type == 'name'
+    or node.type == 'constant' then
+      local assign = { type = 'assign-expression', { type = 'name', '_exp' .. varid }, '=', node }
+      varid = varid + 1
+      return translateAssign(assign, block)
     end
   end
 
-  function translateBlock(block)
-    local blockOutput = { type = 'block' }
-
-    for i, node in ipairs(block) do
-      if translateAssign(node, blockOutput)
-      or translateCondition(node, blockOutput)
-      or translateExpression(node, blockOutput) then
-      end
-    end
-
+  function localizeScope(block)
     local scope = {}
-    for i, node in ipairs(blockOutput) do
-      if node.type == 'assign-statement' then
-        local left = node[1]
+    for i, sub in ipairs(block) do
+      if sub.type == 'assign-statement' then
+        local left = sub[1]
         local name = left[1]
 
         if not scope[name] then
@@ -330,17 +361,17 @@ local function translate(tree)
       end
     end
 
-    insert(blockOutput, 1, {
-      type = 'local-assign-statement',
-      {
-        type = 'names', unpack(scope)
-      },
-    })
-
-    return blockOutput
+    if scope[1] then
+      insert(block, 1, {
+        type = 'local-assign-statement',
+        {
+          type = 'names', unpack(scope)
+        },
+      })
+    end
   end
 
-  return translateBlock(tree)
+  return translateBlock(tree, {})
 end
 
 
@@ -376,7 +407,8 @@ local tree = parse(tokens)
 local translated = translate(tree)
 local output = compile(translated)
 
+-- print(content)
 -- print(inspect(tokens))
 -- dump(tree)
--- dump(translated)
-print(output)
+dump(translated)
+-- print(output)

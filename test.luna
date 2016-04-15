@@ -1,2 +1,8 @@
-a = b = c = 420
-butt
+if condition
+  stuff
+  morestuff
+elseif something_else
+  superstuff
+else
+  nostuff
+end
