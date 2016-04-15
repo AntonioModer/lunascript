@@ -40,15 +40,29 @@ return function(tree)
     if expression.type == 'if-expression' then
       local statement = { type = 'if-statement' }
 
+
       for i, clause in ipairs(expression) do
-        if clause.type == 'if-clause' or clause.type == 'elseif-clause' then
-          local translated = { type = clause.type }
+        if clause.type == 'if-clause' then
+          local translated = { type = 'if-clause' }
           local condition, clauseBlock = unpack(clause)
 
           local conditionExpression = translateExpression(condition, block)
           insert(translated, conditionExpression)
           translateBlock(clauseBlock, translated)
           insert(statement, translated)
+
+        elseif clause.type == 'elseif-clause' then
+          local nestedClause = { type = 'if-clause', unpack(clause) }
+          local nestedExpression = { type = 'if-expression', nestedClause, unpack(expression, 3) }
+          local nestedBlock = { type = 'block' }
+
+          translateExpression(nestedExpression, nestedBlock)
+          localizeScope(nestedBlock)
+
+          local elseClause = { type = 'else-clause', nestedBlock }
+          insert(statement, elseClause)
+
+          break
 
         elseif clause.type == 'else-clause' then
           local translated = { type = 'else-clause' }

@@ -1,7 +1,8 @@
 
 if a = test1
-  pass
+  pass1
 elseif a = test2
+  pass2
 elseif a = test3
-  pass
+  pass3
 end
