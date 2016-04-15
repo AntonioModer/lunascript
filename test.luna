@@ -2,6 +2,6 @@ if a1 = test1
   pass
 elseif a2 = test2
   pass
-else
-  fail
+elseif a3 = test3
+  pass
 end
