@@ -9,45 +9,53 @@ return function(tokens)
   local parseInfixedExpression
   local parseBlock
 
-  function parseLiteral(tokentype, current, token)
+  function parseLiteral(tokentype, token)
     if token.type == tokentype then
-      return current + 1, { type = tokentype, token.value }
+      return { type = tokentype, token.value }, 1
     end
   end
 
   function parseInfixedExpression(open, ...)
-    -- if open.type == 'infix-open' or open.type == 'infix-close' then
-    --   return { type = 'infix', open.value }
-    -- end
+    if open.type == 'infix-open' then
+      local exp, advance = parseExpression(...)
+      if exp then
+        local close = select(advance + 1, ...)
+        if close.type == 'infix-close' then
+          return { type = 'infix-expression', exp }, advance + 2
+        end
+      end
+    end
   end
 
   function parseExpression(...)
-    local pos, node = parseLiteral('literal-number', ...)
-    if not node then pos, node = parseLiteral('literal-string', ...) end
-    if not node then pos, node = parseLiteral('literal-vararg', ...) end
-    if not node then pos, node = parseLiteral('literal-constant', ...) end
-    if not node then pos, node = parseLiteral('literal-name', ...) end
-    return pos, node
+    local node, advance
+    if not node then node, advance = parseInfixedExpression(...) end
+    if not node then node, advance = parseLiteral('literal-number', ...) end
+    if not node then node, advance = parseLiteral('literal-string', ...) end
+    if not node then node, advance = parseLiteral('literal-vararg', ...) end
+    if not node then node, advance = parseLiteral('literal-constant', ...) end
+    if not node then node, advance = parseLiteral('literal-name', ...) end
+    return node, advance
   end
 
-  function parseBlock(current, ...)
+  function parseBlock(...)
     local tokens = {...}
     local result = { type = 'block' }
-    local pos, node
+    local current = 1
+    local node, advance
 
     while current <= #tokens do
-      pos, node = parseExpression(current, unpack(tokens, current))
+      node, advance = parseExpression(unpack(tokens, current))
       if node then
         table.insert(result, node)
-        current = pos
+        current = current + advance
       else
         error(format('unexpected token %q at %d', tokens[current].value, current))
       end
     end
 
-    return current, result
+    return result, advance
   end
 
-  local _, ast = parseBlock(1, unpack(tokens))
-  return ast
+  return parseBlock(unpack(tokens)), nil
 end
