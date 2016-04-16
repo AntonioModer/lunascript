@@ -28,6 +28,11 @@ return function(content)
     return match('(' .. word .. ')%W', tokentype or word)
   end
 
+  local function symbol(op, tokentype)
+    local value = match(op:gsub('(.)', '%%%1') .. '%W', tokentype)
+    if value then return value end
+  end
+
   while current < #content do
     repeat
       -- white space
@@ -37,12 +42,8 @@ return function(content)
       if pass('%-%-%[%[.-%]%]') then break end
       if pass('%-%-[^\r\n]*') then break end
 
-      -- decimal & hex numbers (NOTE: match hex first)
-      if match('0x[%dA-Fa-f]+', 'literal-constant') then break end
-      if match('%d*%.?%d+', 'literal-constant') then break end
-
       -- keywords
-      -- NOTE: match before names, or keywords will be matched as names
+      -- NOTE: match keywords before names, or keywords will be matched _as_ names
       if keyword('if') then break end
       if keyword('then') then break end
       if keyword('elseif') then break end
@@ -52,6 +53,10 @@ return function(content)
       if keyword('in') then break end
       if keyword('do') then break end
       if keyword('while') then break end
+
+      -- keyword assigns - these don't need non-alphanum characters after
+      if match('and=', 'assign-operator') then break end
+      if match('or=', 'assign-operator') then break end
 
       -- keyword operators
       if keyword('and', 'binary-operator') then break end
@@ -66,8 +71,41 @@ return function(content)
       -- names
       if match('[%a_][%w_]*', 'literal-name') then break end
 
+      -- decimal & hex numbers (NOTE: match hex first)
+      if match('0x[%dA-Fa-f]+', 'literal-constant') then break end
+      if match('%d*%.?%d+', 'literal-constant') then break end
+
       -- strings
       if match('%b""', 'literal-constant') then break end
+
+      -- assign operator symbols
+      if symbol('+=', 'assign-operator') then break end
+      if symbol('-=', 'assign-operator') then break end
+      if symbol('*=', 'assign-operator') then break end
+      if symbol('/=', 'assign-operator') then break end
+      if symbol('..=', 'assign-operator') then break end
+
+      -- binary operator symbols
+      if symbol('+', 'binary-operator') then break end
+      if symbol('*', 'binary-operator') then break end
+      if symbol('/', 'binary-operator') then break end
+      if symbol('//', 'binary-operator') then break end
+      if symbol('^', 'binary-operator') then break end
+      if symbol('%', 'binary-operator') then break end
+      if symbol('&', 'binary-operator') then break end
+      if symbol('|', 'binary-operator') then break end
+      if symbol('>>', 'binary-operator') then break end
+      if symbol('<<', 'binary-operator') then break end
+      if symbol('..', 'binary-operator') then break end
+      if symbol('<', 'binary-operator') then break end
+      if symbol('<=', 'binary-operator') then break end
+      if symbol('>', 'binary-operator') then break end
+      if symbol('>=', 'binary-operator') then break end
+      if symbol('==', 'binary-operator') then break end
+      if symbol('~=', 'binary-operator') then break end
+
+      -- unary operator symbols
+      if symbol('#', 'unary-operator') then break end
 
       error(format('unexpected character %q at %d', content:sub(current, current), current), 0)
     until true
