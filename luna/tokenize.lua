@@ -122,6 +122,10 @@ return function(content)
       if match('(%-)', 'operator') then break end
       if match('(~)', 'operator') then break end
 
+      -- parens
+      if match('%(', 'infix-open') then break end
+      if match('%)', 'infix-close') then break end
+
       -- error on unknown characters
       -- TODO: add line position
       print(inspect(tokens))
