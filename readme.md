@@ -2,7 +2,13 @@
 
 A language that compiles to Lua
 
-## Syntax
+## Spec
+
+- `Name` is the lua pattern `[A-Za-z_][A-Za-z0-9_]*`
+- `String` is the lua pattern `%b""`, `%b''`, or `%[%[.-%]%]` (accounting for escape characters)
+- `Number` is the lua pattern `[0-9]*%.[0-9]+`, or `0x[0-9A-Fa-f]`
+
+### Syntax
 ```
 block ::= { expression }
 
@@ -77,7 +83,3 @@ table-pair ::= '[' expression ']' '=' expression | Name '=' expression | express
 
 table-pair-separator ::= ',' | ';'
 ```
-
-- `Name` is the lua pattern `[A-Za-z_][A-Za-z0-9_]*`
-- `String` is the lua pattern `%b""`, `%b''`, or `%[%[.-%]%]` (accounting for escape characters)
-- `Number` is the lua pattern `[0-9]*%.[0-9]+`, or `0x[0-9A-Fa-f]`

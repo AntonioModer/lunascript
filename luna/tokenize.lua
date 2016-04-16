@@ -115,6 +115,8 @@ return function(content)
       if match('(%-)', 'operator') then break end
       if match('(~)', 'operator') then break end
 
+      -- error on unknown characters
+      -- TODO: add line position
       error(format('unexpected character %q at %d', content:sub(current, current), current), 0)
     until true
   end
