@@ -7,29 +7,75 @@ A language that compiles to Lua
 block ::= { expression }
 
 expression ::=
-  assign-expression |
+  infixed-expression |
   if-expression |
   for-expression |
   while-expression |
   do-expression |
-  function-expression |
-  Name | String | Number |
-  `(` expression `)` |
-  { ',' expression }
+  function-definition |
+  function-call |
+  unary-expression |
+  assign-expression |
+  binary-expression |
+  literal-value
 
-assign-expression ::= name-list '=' expression
+infixed-expression ::= '(' expression ')'
 
-if-expression ::= 'if' expression 'then' block 'end'
+expression-list ::= expression { ',' expression }
 
-for-expression ::= 'for' name-list 'in' expression 'do' block 'end'
+expression-prefix ::= var | function-call | infixed-expression
+
+
+if-expression ::= 'if' expression 'then' block { 'elseif' block } 'end'
+
+for-expression ::= 'for' variable-list 'in' expression-list 'do' block 'end'
 
 while-expression ::= 'while' expression 'do' block 'end'
 
 do-expression ::= 'do' block 'end'
 
-function-expression ::= 'function' Name { '.' Name } [ ':' Name ]
 
-name-list ::= Name { ',' Name }
+assign-expression ::= variable-list assign-operator expression-list
+
+unary-expression ::= unary-operator expression
+
+binary-expression ::= expression binary-operator expression
+
+
+function-definition ::= 'function' [ function-name ] '(' function-parameters ')' block 'end'
+
+function-name ::= Name { '.' Name } [ ':' Name ]
+
+function-parameters ::= name-list [',' '...'] | '...'
+
+function-call ::= expression-prefix '(' expression-list ')'
+
+
+variable ::= Name | expression-prefix '[' expression ']' | expression-prefix '.' Name
+
+variable-list ::= variable { ',' variable }
+
+
+literal-value ::= 'true' | 'false' | 'nil' | '...' | table-definition | Name | String | Number
+
+
+unary-operator ::= '-' | 'not' | '#' | '~'
+
+binary-operator ::=  '+' | '-' | '*' | '/' | '//' | '^' | '%' |
+  '&' | '~' | '|' | '>>' | '<<' | '..' |
+  '<' | '<=' | '>' | '>=' | '==' | '~=' |
+  'and' | 'or'
+
+assign-operator ::= '+=' | '-=' | '*=' | '/=' | '..=' | 'and=' | 'or='
+
+
+table-definition ::= '{' [table-pair-list] '}'
+
+table-pair-list ::= table-pair { table-pair-separator table-pair } [table-pair-separator]
+
+table-pair ::= '[' expression ']' '=' expression | Name '=' expression | expression
+
+table-pair-separator ::= ',' | ';'
 ```
 
 - `Name` is the lua pattern `[A-Za-z_][A-Za-z0-9_]*`
