@@ -2,28 +2,39 @@ local insert = table.insert
 local concat = table.concat
 local format = string.format
 
-return function(tokens)
-  local function parseExpression(token)
-    return { type = 'expression', token.value }
+local function parseLiteral(tokentype, token)
+  if token.type == tokentype then
+    return { type = tokentype, token.value }
   end
+end
 
-  local function parseBlock(tokens, current)
-    local result = { type = 'block' }
-    local node
+local function parseExpression(...)
+  return parseLiteral('literal-number', ...)
+  or parseLiteral('literal-string', ...)
+  or parseLiteral('literal-vararg', ...)
+  or parseLiteral('literal-constant', ...)
+end
 
-    while current <= #tokens do
-      node = parseExpression(tokens[current])
-      if node then
-        table.insert(result, node)
-        current = current + #node
-      else
-        error(format('unexpected token %q at %d', tokens[current].value, current))
-      end
+local function parseBlock(current, ...)
+  local tokens = {...}
+  local result = { type = 'block' }
+  local node
+
+  while current <= #tokens do
+    node = parseExpression(unpack(tokens, current))
+    if node then
+      table.insert(result, node)
+      current = current + #node
+    else
+      error(format('unexpected token %q at %d', tokens[current].value, current))
     end
-
-    return result, current
   end
 
-  local tree = parseBlock(tokens, 1)
+  return current, result
+end
+
+
+return function(tokens)
+  local _, tree = parseBlock(1, unpack(tokens))
   return tree
 end

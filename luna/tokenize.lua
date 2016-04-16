@@ -2,6 +2,8 @@ local concat = table.concat
 local insert = table.insert
 local format = string.format
 
+local inspect = require 'inspect'
+
 return function(content)
   local tokens = {}
   local current = 1
@@ -42,6 +44,9 @@ return function(content)
       if pass('%-%-%[%[.-%]%]') then break end
       if pass('%-%-[^\r\n]*') then break end
 
+      -- vararg
+      if symbol('...', 'literal-vararg') then break end
+
       -- keywords
       -- NOTE: match keywords before names, or keywords will be matched _as_ names
       if keyword('if') then break end
@@ -72,11 +77,13 @@ return function(content)
       if match('[%a_][%w_]*', 'literal-name') then break end
 
       -- decimal & hex numbers (NOTE: match hex first)
-      if match('0x[%dA-Fa-f]+', 'literal-constant') then break end
-      if match('%d*%.?%d+', 'literal-constant') then break end
+      if match('0x[%dA-Fa-f]+', 'literal-number') then break end
+      if match('%d*%.?%d+', 'literal-number') then break end
 
-      -- strings
-      if match('%b""', 'literal-constant') then break end
+      -- strings (TODO: account for escapes)
+      if match('%b""', 'literal-string') then break end
+      if match("%b''", 'literal-string') then break end
+      if match("%[%[.-%]%]", 'literal-string') then break end
 
       -- assign operator symbols
       if symbol('=', 'assign-equals') then break end
@@ -117,7 +124,8 @@ return function(content)
 
       -- error on unknown characters
       -- TODO: add line position
-      error(format('unexpected character %q at %d', content:sub(current, current), current), 0)
+      print(inspect(tokens))
+      error(format('tokenizer: unexpected character %q at %d', content:sub(current, current), current), 0)
     until true
   end
 
