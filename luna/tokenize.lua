@@ -79,12 +79,12 @@ return function(content)
       if match('%b""', 'literal-constant') then break end
 
       -- assign operator symbols
-      if symbol('=', 'assign-operator') then break end
-      if symbol('+=', 'assign-operator') then break end
-      if symbol('-=', 'assign-operator') then break end
-      if symbol('*=', 'assign-operator') then break end
-      if symbol('/=', 'assign-operator') then break end
-      if symbol('..=', 'assign-operator') then break end
+      if symbol('=', 'assign-equals') then break end
+      if symbol('+=', 'assign-add') then break end
+      if symbol('-=', 'assign-sub') then break end
+      if symbol('*=', 'assign-mul') then break end
+      if symbol('/=', 'assign-div') then break end
+      if symbol('..=', 'assign-concat') then break end
 
       -- binary operator symbols (2 char)
       if symbol('//', 'binary-operator') then break end
