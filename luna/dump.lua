@@ -14,7 +14,8 @@ local function dump(node, indent)
     if type(node[i]) == 'table' then
       insert(buffer, dump(node[i], indent + 1))
     else
-      insert(buffer, format('%s%s\n', getIndent(indent + 1), tostring(node[i])))
+      local value = tostring(node[i]):gsub('\r?\n', '\n' .. getIndent(indent + 1))
+      insert(buffer, format('%s%s\n', getIndent(indent + 1), value))
     end
   end
   return concat(buffer)
