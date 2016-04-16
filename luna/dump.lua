@@ -1,11 +1,23 @@
-return function(node, indent)
+local insert = table.insert
+local concat = table.concat
+local format = string.format
+
+local function getIndent(level)
+  return string.rep('   ', level)
+end
+
+local function dump(node, indent)
+  local buffer = {}
   indent = indent or 0
-  print(string.rep('   ', indent) .. node.type .. ':')
+  insert(buffer, format('%s%s:\n', getIndent(indent), node.type))
   for i=1, #node do
     if type(node[i]) == 'table' then
-      dump(node[i], indent + 1)
+      insert(buffer, dump(node[i], indent + 1))
     else
-      print(string.rep('   ', indent + 1) .. tostring(node[i]))
+      insert(buffer, format('%s%s\n', getIndent(indent + 1), tostring(node[i])))
     end
   end
+  return concat(buffer)
 end
+
+return dump

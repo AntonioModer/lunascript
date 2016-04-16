@@ -8,11 +8,12 @@ local path = ...
 local _, content = io.input(path), io.read('*a'), io.close(), io.input()
 
 local tokens = tokenize(content)
--- local tree = parse(tokens)
+local tree = parse(tokens)
 -- local translated = translate(tree)
 -- local output = compile(translated)
 
 
 local inspect = require 'inspect'
 
-print(inspect(tokens))
+-- print(inspect(tokens))
+print(dump(tree))
