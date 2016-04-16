@@ -23,10 +23,10 @@ infixed-expression ::= '(' expression ')'
 
 expression-list ::= expression { ',' expression }
 
-expression-prefix ::= var | function-call | infixed-expression
+expression-prefix ::= variable | function-call | infixed-expression
 
 
-if-expression ::= 'if' expression 'then' block { 'elseif' block } 'end'
+if-expression ::= 'if' expression 'then' block { 'elseif' block } [ 'else' block ] 'end'
 
 for-expression ::= 'for' variable-list 'in' expression-list 'do' block 'end'
 
