@@ -18,4 +18,5 @@ if then elseif else end for in do while
 
 and= or=
 
-+ * >> <=
++*>><<=
+- ~

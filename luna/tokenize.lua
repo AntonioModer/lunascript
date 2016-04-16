@@ -29,7 +29,7 @@ return function(content)
   end
 
   local function symbol(op, tokentype)
-    local value = match(op:gsub('(.)', '%%%1') .. '%W', tokentype)
+    local value = match('(' .. op:gsub('(.)', '%%%1') .. ')', tokentype)
     if value then return value end
   end
 
@@ -79,33 +79,41 @@ return function(content)
       if match('%b""', 'literal-constant') then break end
 
       -- assign operator symbols
+      if symbol('=', 'assign-operator') then break end
       if symbol('+=', 'assign-operator') then break end
       if symbol('-=', 'assign-operator') then break end
       if symbol('*=', 'assign-operator') then break end
       if symbol('/=', 'assign-operator') then break end
       if symbol('..=', 'assign-operator') then break end
 
-      -- binary operator symbols
+      -- binary operator symbols (2 char)
+      if symbol('//', 'binary-operator') then break end
+      if symbol('>>', 'binary-operator') then break end
+      if symbol('<<', 'binary-operator') then break end
+      if symbol('..', 'binary-operator') then break end
+      if symbol('<=', 'binary-operator') then break end
+      if symbol('>=', 'binary-operator') then break end
+      if symbol('~=', 'binary-operator') then break end
+      if symbol('==', 'binary-operator') then break end
+
+      -- binary operator symbols (1 char)
       if symbol('+', 'binary-operator') then break end
       if symbol('*', 'binary-operator') then break end
       if symbol('/', 'binary-operator') then break end
-      if symbol('//', 'binary-operator') then break end
       if symbol('^', 'binary-operator') then break end
       if symbol('%', 'binary-operator') then break end
       if symbol('&', 'binary-operator') then break end
       if symbol('|', 'binary-operator') then break end
-      if symbol('>>', 'binary-operator') then break end
-      if symbol('<<', 'binary-operator') then break end
-      if symbol('..', 'binary-operator') then break end
       if symbol('<', 'binary-operator') then break end
-      if symbol('<=', 'binary-operator') then break end
       if symbol('>', 'binary-operator') then break end
-      if symbol('>=', 'binary-operator') then break end
-      if symbol('==', 'binary-operator') then break end
-      if symbol('~=', 'binary-operator') then break end
 
       -- unary operator symbols
       if symbol('#', 'unary-operator') then break end
+
+      -- howto match???? dumb combined binary/unary operators????
+      -- screw it
+      if match('(%-)', 'operator') then break end
+      if match('(~)', 'operator') then break end
 
       error(format('unexpected character %q at %d', content:sub(current, current), current), 0)
     until true
