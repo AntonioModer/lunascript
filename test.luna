@@ -6,4 +6,7 @@
 "hello world"
 butt_Nugget
 
--- comment everywhere
+--[[
+comment
+everywhere
+]]
