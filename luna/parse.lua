@@ -40,21 +40,21 @@ return function(tokens)
 
   function parseBlock(...)
     local tokens = {...}
-    local result = { type = 'block' }
+    local block = { type = 'block' }
     local current = 1
-    local node, advance
 
     while current <= #tokens do
-      node, advance = parseExpression(unpack(tokens, current))
+      local node, advance = parseExpression(unpack(tokens, current))
       if node then
-        table.insert(result, node)
+        table.insert(block, node)
         current = current + advance
       else
-        error(format('unexpected token %q at %d', tokens[current].value, current))
+        return block
+        -- error(format('unexpected token %q at %d', tokens[current].value, current))
       end
     end
 
-    return result, advance
+    return block, current
   end
 
   return parseBlock(unpack(tokens)), nil
