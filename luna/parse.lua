@@ -11,51 +11,49 @@ return function(tokens)
 
   function parseLiteral(tokentype, token)
     if token.type == tokentype then
-      return { type = tokentype, token.value }, 1
+      return { type = tokentype, size = 1, token.value }
     end
   end
 
   function parseInfixedExpression(open, ...)
     if open.type == 'infix-open' then
-      local exp, advance = parseExpression(...)
+      local exp = parseExpression(...)
       if exp then
-        local close = select(advance + 1, ...)
-        if close.type == 'infix-close' then
-          return { type = 'infix-expression', exp }, advance + 2
+        local close = select(exp.size + 1, ...)
+        if close and close.type == 'infix-close' then
+          return { type = 'infix-expression', size = exp.size + 2, exp }
         end
       end
     end
   end
 
   function parseExpression(...)
-    local node, advance
-    if not node then node, advance = parseInfixedExpression(...) end
-    if not node then node, advance = parseLiteral('literal-number', ...) end
-    if not node then node, advance = parseLiteral('literal-string', ...) end
-    if not node then node, advance = parseLiteral('literal-vararg', ...) end
-    if not node then node, advance = parseLiteral('literal-constant', ...) end
-    if not node then node, advance = parseLiteral('literal-name', ...) end
-    return node, advance
+    return parseInfixedExpression(...)
+    or parseLiteral('literal-number', ...)
+    or parseLiteral('literal-string', ...)
+    or parseLiteral('literal-vararg', ...)
+    or parseLiteral('literal-constant', ...)
+    or parseLiteral('literal-name', ...)
   end
 
   function parseBlock(...)
     local tokens = {...}
     local block = { type = 'block' }
-    local current = 1
+    local stepped = 1
 
-    while current <= #tokens do
-      local node, advance = parseExpression(unpack(tokens, current))
+    while stepped <= #tokens do
+      local node = parseExpression(unpack(tokens, stepped))
       if node then
         table.insert(block, node)
-        current = current + advance
+        stepped = stepped + node.size
       else
-        return block
-        -- error(format('unexpected token %q at %d', tokens[current].value, current))
+        break
       end
     end
 
-    return block, current
+    block.size = stepped
+    return block
   end
 
-  return parseBlock(unpack(tokens)), nil
+  return parseBlock(unpack(tokens))
 end
