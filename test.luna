@@ -1,1 +1,5 @@
-(hello)
+-- match empty blocks
+do end
+
+-- match lots of expressions
+do exp1 exp2 exp3 end

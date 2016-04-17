@@ -2,7 +2,6 @@ local tokenize = require 'luna.tokenize'
 local parse = require 'luna.parse'
 local translate = require 'luna.translate'
 local compile = require 'luna.compile'
-local dump = require 'luna.dump'
 
 local path = ...
 local _, content = io.input(path), io.read('*a'), io.close(), io.input()
@@ -16,4 +15,4 @@ local tree = parse(tokens)
 local inspect = require 'inspect'
 
 -- print(inspect(tokens))
-print(dump(tree))
+print(inspect(tree))

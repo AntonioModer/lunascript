@@ -45,7 +45,7 @@ return function(content)
       if pass('%-%-[^\r\n]*') then break end
 
       -- vararg
-      if symbol('...', 'literal-vararg') then break end
+      if match('(%.%.%.)[^%w%.]', 'literal-vararg') then break end
 
       -- keywords
       -- NOTE: match keywords before names, or keywords will be matched _as_ names
@@ -97,7 +97,7 @@ return function(content)
       if symbol('//', 'binary-operator') then break end
       if symbol('>>', 'binary-operator') then break end
       if symbol('<<', 'binary-operator') then break end
-      if symbol('..', 'binary-operator') then break end
+      if match('%.%.[^%w%.]', 'binary-operator') then break end
       if symbol('<=', 'binary-operator') then break end
       if symbol('>=', 'binary-operator') then break end
       if symbol('~=', 'binary-operator') then break end
@@ -129,7 +129,7 @@ return function(content)
       -- error on unknown characters
       -- TODO: add line position
       print(inspect(tokens))
-      error(format('tokenizer: unexpected character %q at %d', content:sub(current, current), current), 0)
+      error(format('tokenizer: unexpected character %q at %d', content:sub(current, current), current))
     until true
   end
 
