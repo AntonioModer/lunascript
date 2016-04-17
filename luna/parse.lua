@@ -45,6 +45,7 @@ return function(tokens)
   end
 
   function walk()
+    local node
 
     -- if expression
     if skipToken('if') then
@@ -77,12 +78,14 @@ return function(tokens)
         })
       end
 
-      return skipToken('end') and { type = 'conditional-expression', cases = cases }
+      if skipToken('end') then
+        node = { type = 'conditional-expression', cases = cases }
+      end
     end
 
     -- do expression
     if skipToken('do') then
-      return {
+      node = {
         type = 'block-expression',
         body = parseBodyUntil(skipToken, 'end'),
       }
@@ -92,7 +95,7 @@ return function(tokens)
     if skipToken('infix-open') then
       local exp = walk()
       if exp and skipToken('infix-close') then
-        return { type = 'infix', value = exp }
+        node = { type = 'infix', value = exp }
       end
     end
 
@@ -103,23 +106,25 @@ return function(tokens)
       'literal-constant',
       'literal-vararg')
 
-    if literal then
-      local op = skipToken('binary-operator')
-      if op then
-        local right = walk()
-        if right then
-          return {
-            type = 'binary-expression',
-            left = literal,
-            op = op,
-            right = right,
-          }
-        end
-      end
-
       -- literals
-      return { type = literal.type, value = literal.value }
+    if literal then
+      node = { type = literal.type, value = literal.value }
     end
+
+    -- binary expression
+    local binaryop = skipToken('binary-operator')
+    if binaryop then
+      local left = node
+      local right = walk()
+      node = {
+        type = 'binary-expression',
+        left = left,
+        right = right,
+        op = binaryop.value,
+      }
+    end
+
+    return node
   end
 
   local tree = { type = 'block', body = {} }

@@ -19,5 +19,5 @@ do
   test2
 end
 
--- binary expression
-a + b - 123 * 69 / 420
+-- binary expressions
+(420 + 69) * 3 - (20 / 2) + do nothing end - if money then 'happy' else 'get money' end
