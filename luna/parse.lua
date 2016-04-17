@@ -8,6 +8,7 @@ return function(tokens)
   local current = 1
 
   local walk
+  local parseSingleExpression
 
   local function advance()
     current = current + 1
@@ -113,12 +114,30 @@ return function(tokens)
     end
   end
 
-  function walk()
-    local node = parseConditional()
+  local function parseUnary()
+    local unaryop = skipToken('unary-operator')
+    if unaryop then
+      local value = parseSingleExpression()
+      if value then
+        return {
+          type = 'unary-expression',
+          op = unaryop.value,
+          value = value,
+        }
+      end
+    end
+  end
+
+  function parseSingleExpression()
+    return parseUnary()
+      or parseConditional()
       or parseBlock()
       or parseInfix()
       or parseLiteral()
+  end
 
+  function walk()
+    local node = parseSingleExpression()
     local binaryop = skipToken('binary-operator')
     if binaryop then
       return {

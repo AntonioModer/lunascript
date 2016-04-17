@@ -85,6 +85,14 @@ return function(content)
       if match("%b''", 'literal-string') then break end
       if match("%[%[.-%]%]", 'literal-string') then break end
 
+      -- unary operator symbols
+      -- NOTE: lua allows unary operators to have spaces before the operand
+      -- but for an expression based language, this makes too many ambiguities
+      -- we'll just require these to have no spaces after them to parse them correctly
+      if match('(#)%S', 'unary-operator') then break end
+      if match('(-)%S', 'unary-operator') then break end
+      if match('(~)%S', 'unary-operator') then break end
+
       -- assign operator symbols
       if symbol('=', 'assign-equals') then break end
       if symbol('+=', 'assign-add') then break end
@@ -113,14 +121,8 @@ return function(content)
       if symbol('|', 'binary-operator') then break end
       if symbol('<', 'binary-operator') then break end
       if symbol('>', 'binary-operator') then break end
-
-      -- these can also be unary operators,
-      -- so we'll make special cases for them in parsing
       if symbol('-', 'binary-operator') then break end
       if symbol('~', 'binary-operator') then break end
-
-      -- unary operator symbols
-      if symbol('#', 'unary-operator') then break end
 
       -- parens
       if match('%(', 'infix-open') then break end
