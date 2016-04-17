@@ -18,3 +18,6 @@ do
   test
   test2
 end
+
+-- binary expression
+a + b - 123 * 69 / 420

@@ -96,7 +96,6 @@ return function(tokens)
       end
     end
 
-    -- literals
     local literal = skipToken(
       'literal-name',
       'literal-number',
@@ -105,6 +104,20 @@ return function(tokens)
       'literal-vararg')
 
     if literal then
+      local op = skipToken('binary-operator')
+      if op then
+        local right = walk()
+        if right then
+          return {
+            type = 'binary-expression',
+            left = literal,
+            op = op,
+            right = right,
+          }
+        end
+      end
+
+      -- literals
       return { type = literal.type, value = literal.value }
     end
   end

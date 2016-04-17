@@ -97,7 +97,7 @@ return function(content)
       if symbol('//', 'binary-operator') then break end
       if symbol('>>', 'binary-operator') then break end
       if symbol('<<', 'binary-operator') then break end
-      if match('%.%.[^%w%.]', 'binary-operator') then break end
+      if symbol('..', 'binary-operator') then break end
       if symbol('<=', 'binary-operator') then break end
       if symbol('>=', 'binary-operator') then break end
       if symbol('~=', 'binary-operator') then break end
@@ -114,13 +114,13 @@ return function(content)
       if symbol('<', 'binary-operator') then break end
       if symbol('>', 'binary-operator') then break end
 
+      -- these can also be unary operators,
+      -- so we'll make special cases for them in parsing
+      if symbol('-', 'binary-operator') then break end
+      if symbol('~', 'binary-operator') then break end
+
       -- unary operator symbols
       if symbol('#', 'unary-operator') then break end
-
-      -- howto match???? dumb combined binary/unary operators????
-      -- screw it
-      if match('(%-)', 'operator') then break end
-      if match('(~)', 'operator') then break end
 
       -- parens
       if match('%(', 'infix-open') then break end
