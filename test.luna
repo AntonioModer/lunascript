@@ -1,5 +1,20 @@
 -- match empty blocks
-do end
+-- do end
 
 -- match lots of expressions
-do exp1 exp2 exp3 end
+-- do exp1 exp2 exp3 end
+
+-- if
+if something then
+  somethingelse
+  (test)
+elseif somethingelse then
+  yay
+else
+  default
+end
+
+do
+  test
+  test2
+end

@@ -2,74 +2,110 @@ local insert = table.insert
 local concat = table.concat
 local format = string.format
 
+local inspect = require 'inspect'
 
 return function(tokens)
   local current = 1
 
-  local function walk()
+  local walk
+
+  local function advance()
+    current = current + 1
+  end
+
+  local function checkToken(...)
     local token = tokens[current]
+    if not token then return false end
+    for i=1, select('#', ...) do
+      if token.type == select(i, ...) then
+        return token
+      end
+    end
+    return false
+  end
+
+  local function skipToken(...)
+    local token = checkToken(...)
+    if token then
+      advance()
+      return token
+    end
+    return false
+  end
+
+  local function parseBodyUntil(func, ...)
+    local body = {}
+    while not func(...) do
+      local exp = walk()
+      if exp then
+        insert(body, exp)
+      end
+    end
+    return body
+  end
+
+  function walk()
 
     -- if expression
-    if token.type == 'if' then
-      current = current + 1 -- skip 'if'
-
-      local clauses = {}
+    if skipToken('if') then
+      local cases = {}
 
       local condition = walk()
-      token = tokens[current]
-      if condition and token and token.type == 'then' then
-        current = current + 1 -- skip 'then'
-
-        local body = {}
-        repeat
-          insert(body, walk())
-          token = tokens[current]
-        until token and token.type == 'end'
-
-        current = current + 1 -- skip 'end'
-        insert(clauses, { type = 'if-clause', condition = condition, body = body })
-
+      if condition and skipToken('then') then
+        insert(cases, {
+          type = 'condition',
+          condition = condition,
+          body = parseBodyUntil(checkToken, 'elseif', 'else', 'end'),
+        })
       end
 
-      return { type = 'if-expression', clauses = clauses }
+      while skipToken('elseif') do
+        local condition = walk()
+        if condition and skipToken('then') then
+          insert(cases, {
+            type = 'condition',
+            condition = condition,
+            body = parseBodyUntil(checkToken, 'else', 'end'),
+          })
+        end
+      end
+
+      while skipToken('else') do
+        insert(cases, {
+          type = 'default',
+          body = parseBodyUntil(checkToken, 'end')
+        })
+      end
+
+      return skipToken('end') and { type = 'conditional-expression', cases = cases }
     end
 
     -- do expression
-    if token.type == 'do' then
-      current = current + 1 -- skip 'do'
-
-      local body = {}
-      token = tokens[current]
-      while token and token.type ~= 'end' do
-        insert(body, walk())
-        token = tokens[current]
-      end
-
-      current = current + 1 -- skip 'end'
-      return { type = 'do-expression', body = body }
+    if skipToken('do') then
+      return {
+        type = 'block-expression',
+        body = parseBodyUntil(skipToken, 'end'),
+      }
     end
 
     -- infix expression
-    if token.type == 'infix-open' then
-      current = current + 1
+    if skipToken('infix-open') then
       local exp = walk()
-      if exp then
-        local close = tokens[current]
-        if close.type == 'infix-close' then
-          current = current + 1
-          return { type = 'infix', value = exp }
-        end
+      if exp and skipToken('infix-close') then
+        return { type = 'infix', value = exp }
       end
     end
 
     -- literals
-    if token.type == 'literal-name'
-    or token.type == 'literal-number'
-    or token.type == 'literal-string'
-    or token.type == 'literal-constant'
-    or token.type == 'literal-vararg' then
-      current = current + 1
-      return { type = token.type, value = token.value }
+    local literal = skipToken(
+      'literal-name',
+      'literal-number',
+      'literal-string',
+      'literal-constant',
+      'literal-vararg')
+
+    if literal then
+      return { type = literal.type, value = literal.value }
     end
   end
 
