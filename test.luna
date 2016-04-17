@@ -21,3 +21,12 @@ end
 
 -- binary expressions
 (420 + 69) * 3 - (20 / 2) + do nothing end - if money then 'happy' else 'get money' end
+
+
+true or false
+false and true
+
+-- unary expressions
+-- -999
+-- #(a % b)
+-- ~0xFFFF
