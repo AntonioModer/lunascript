@@ -44,86 +44,84 @@ return function(tokens)
     return body
   end
 
-  function walk()
-    local node
+  local function parseConditional()
+    if skipToken('if') then
+      local cases = {}
 
-    repeat
-      -- if expression
-      if skipToken('if') then
-        local cases = {}
+      local condition = walk()
+      if condition and skipToken('then') then
+        insert(cases, {
+          type = 'condition',
+          condition = condition,
+          body = parseBodyUntil(checkToken, 'elseif', 'else', 'end'),
+        })
+      end
 
+      while skipToken('elseif') do
         local condition = walk()
         if condition and skipToken('then') then
           insert(cases, {
             type = 'condition',
             condition = condition,
-            body = parseBodyUntil(checkToken, 'elseif', 'else', 'end'),
+            body = parseBodyUntil(checkToken, 'else', 'end'),
           })
         end
-
-        while skipToken('elseif') do
-          local condition = walk()
-          if condition and skipToken('then') then
-            insert(cases, {
-              type = 'condition',
-              condition = condition,
-              body = parseBodyUntil(checkToken, 'else', 'end'),
-            })
-          end
-        end
-
-        while skipToken('else') do
-          insert(cases, {
-            type = 'default',
-            body = parseBodyUntil(checkToken, 'end')
-          })
-        end
-
-        if skipToken('end') then
-          node = { type = 'conditional-expression', cases = cases }
-          break
-        end
       end
 
-      -- do expression
-      if skipToken('do') then
-        node = {
-          type = 'block-expression',
-          body = parseBodyUntil(skipToken, 'end'),
-        }
-        break
+      while skipToken('else') do
+        insert(cases, {
+          type = 'default',
+          body = parseBodyUntil(checkToken, 'end')
+        })
       end
 
-      -- infix expression
-      if skipToken('infix-open') then
-        local exp = walk()
-        if exp and skipToken('infix-close') then
-          node = { type = 'infix', value = exp }
-          break
-        end
+      if skipToken('end') then
+        return { type = 'conditional-expression', cases = cases }
       end
+    end
+  end
 
-      local literal = skipToken(
-        'literal-name',
-        'literal-number',
-        'literal-string',
-        'literal-constant',
-        'literal-vararg')
+  local function parseBlock()
+    if skipToken('do') then
+      return {
+        type = 'block-expression',
+        body = parseBodyUntil(skipToken, 'end'),
+      }
+    end
+  end
 
-        -- literals
-      if literal then
-        node = { type = literal.type, value = literal.value }
-        break
+  function parseInfix()
+    if skipToken('infix-open') then
+      local exp = walk()
+      if exp and skipToken('infix-close') then
+        return { type = 'infix', value = exp }
       end
-    until true
+    end
+  end
 
-    -- unary expression
-    -- local unaryop = skipToken('unary-operator')
+  function parseLiteral()
+    local literal = skipToken(
+      'literal-name',
+      'literal-number',
+      'literal-string',
+      'literal-constant',
+      'literal-vararg')
 
-    -- binary expression
+      -- literals
+    if literal then
+      return { type = literal.type, value = literal.value }
+    end
+  end
+
+  function walk()
+    local node = parseConditional()
+      or parseBlock()
+      or parseInfix()
+      or parseLiteral()
+
     local binaryop = skipToken('binary-operator')
     if binaryop then
-      node = {
+      return {
         type = 'binary-expression',
         left = node,
         op = binaryop.value,
