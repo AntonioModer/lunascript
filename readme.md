@@ -93,6 +93,8 @@ while-expression ::= 'while' expression 'do' block 'end'
 
 do-expression ::= 'do' block 'end'
 
+repeat-expression ::= 'repeat' block 'until' expression
+
 
 assign-expression ::= variable-list assign-operator expression-list
 
