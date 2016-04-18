@@ -177,10 +177,10 @@ return function(tokens)
 
     local index = skipToken('index-self') and skipToken('literal-name')
     if index then
-      name = name .. ':' .. index.value
+      name = (name or '') .. ':' .. index.value
     end
 
-    return name or ''
+    return { type = 'function-name', name = name }
   end
 
   function parseFunctionParameters()
@@ -216,6 +216,22 @@ return function(tokens)
         }
       end
     end
+  end
+
+  function parseFunctionCall()
+    local pos = current
+    local prefix = parseFunctionName() or parsePrefixExpression() or parseVariable()
+    if prefix and checkToken('infix-open') then
+      local node = prefix
+      while skipToken('infix-open') do
+        local args = parseExpressionList()
+        if args and skipToken('infix-close') then
+          node = { type = 'function-call', prefix = node, args = args }
+        end
+      end
+      return node
+    end
+    current = pos
   end
 
   function parseInfix()
@@ -281,6 +297,7 @@ return function(tokens)
       or parseConditional()
       or parseBlock()
       or parseFunction()
+      or parseFunctionCall()
       or parseAssign()
       or parseVariable()
       or parseInfix()

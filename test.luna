@@ -70,3 +70,14 @@ end
 
 function foo.bar() end
 function foo.bar:baz() end
+
+-- function call
+test()
+test(1, 2, 3)
+
+if success() then
+  print('yay!')
+end
+
+test.test:test()(a, b, c)(1, 2, 3)
+-- (1 + 2 - 3 / test)(test, test, test, ...)(test, ..., test)
