@@ -2,13 +2,66 @@
 
 A language that compiles to Lua
 
-## Spec
+## Key Features
+
+- Everything is an expression
+
+```lua
+if file = io.open 'file.txt' then
+  while line = file:read() do
+    print(line)
+  end
+  file:close()
+end
+
+life = 100
+repeat
+  print 'alive!'
+until (life -= math.random(1, 10)) <= 0 and print 'dead :('
+
+if (a = stuff()) and (b = stuff()) and (c = stuff()) then
+  print 'all the stuff!'
+end
+```
+
+- `require` helpers
+
+```lua
+import 'inspect'          --> local inspect = require 'inspect'
+import 'lib.inspect'      --> local inspect = require 'lib.inspect'
+import 'player' as Player --> local Player  = require 'player'
+```
+
+- Automatic localization, at top level of block, with optional globalization
+
+```lua
+function foo() bar() end
+function bar() foo() end
+global var = 5
+
+-- compiles to:
+local foo, bar
+function foo() bar() end
+function bar() foo() end
+var = 5
+```
+
+- Assignment operators, `+=`, `-=` and similar
+- Possibly rework loops to make table/array looping less inconvenient and awkward
+- Possible existential operator `?`
+- Some other things stolen from MoonScript and other languages because being creative is hard ¯\\\_(ツ)\_/¯
+- Anything else that can be answered with 'Why not?'
+
+## Why?
+
+Only because I'm annoyed with a few things I can't do with regular Lua, while not wanting to use another full-blown entirely different language that has its own sets of limitations and lack of considerations when it comes to some things.
+
+## Syntax
 
 - `Name` is the lua pattern `[A-Za-z_][A-Za-z0-9_]*`
 - `String` is the lua pattern `%b""`, `%b''`, or `%[%[.-%]%]` (accounting for escape characters)
 - `Number` is the lua pattern `[0-9]*%.[0-9]+`, or `0x[0-9A-Fa-f]`
 
-### Syntax
 ```
 block ::= { expression }
 
