@@ -94,11 +94,27 @@ return function(tokens)
     return parseList('expression-list', walk)
   end
 
+  function parseNameIndex()
+    local index = skipToken('index-name') and skipToken('literal-name')
+    if index then
+      return { type = 'index-name', value = index.value }
+    end
+  end
+
+  function parseExpressionIndex()
+    if skipToken('index-expression-open') then
+      local exp = walk()
+      if exp and skipToken('index-expression-close') then
+        return { type = 'index-expression', value = exp }
+      end
+    end
+  end
+
   function parseVariable()
     local node = parsePrefixExpression()
     local index = parseNameIndex() or parseExpressionIndex()
     while index do
-      node = { type = 'index-name', prefix = node, index = index }
+      node = { type = 'index', prefix = node, index = index }
       index = parseNameIndex() or parseExpressionIndex()
     end
     return node
@@ -234,22 +250,6 @@ return function(tokens)
           op = unaryop.value,
           value = value,
         }
-      end
-    end
-  end
-
-  function parseNameIndex()
-    local index = skipToken('index-name') and skipToken('literal-name')
-    if index then
-      return index
-    end
-  end
-
-  function parseExpressionIndex()
-    if skipToken('index-expression-open') then
-      local exp = walk()
-      if exp and skipToken('index-expression-close') then
-        return { type = 'index-expression', value = exp }
       end
     end
   end

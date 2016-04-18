@@ -45,8 +45,7 @@ a, b, c = 1 + 1, 10 / 2
 -- variable indexing / prefixes
 foo.bar
 foo.bar.baz
-(foo = bar).baz
-(some *= stuff + 1).foo['bar'][baz / baz / baz] = 'baz' * (hello /= world)
+thing[some *= stuff + 1].foo['bar'][baz / baz / baz] = 'baz' * (hello /= world)
 
 -- function definition
 function empty() end
@@ -63,6 +62,9 @@ end
 function() end
 function(hello, world, hello.world['world'], ...)
   test1, test2 = ...
+end
+
+function constructor(self, self.x, (a + b + c).y)
 end
 
 
