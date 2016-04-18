@@ -72,6 +72,7 @@ expression ::=
   for-expression |
   while-expression |
   do-expression |
+  repeat-expression |
   function-definition |
   function-call |
   unary-expression |
