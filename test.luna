@@ -40,5 +40,10 @@ a = b = c = 420
 
 -- varlists / explists
 test
-a, b, c = 1 + 1, 10 / 2,
-test
+a, b, c = 1 + 1, 10 / 2
+
+-- variable indexing / prefixes
+foo.bar
+foo.bar.baz
+(foo = bar).baz
+(some *= stuff + 1).foo['bar'] = 'baz' * (hello /= world)

@@ -131,6 +131,11 @@ return function(content)
       -- list separator
       if symbol(',', 'list-separator') then break end
 
+      -- indexing
+      if symbol('.', 'index-name') then break end
+      if symbol('[', 'index-expression-open') then break end
+      if symbol(']', 'index-expression-close') then break end
+
       -- error on unknown characters
       -- TODO: add line position
       error(format('tokenizer: unexpected character %q at %d', content:sub(current, current), current))

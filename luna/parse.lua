@@ -9,6 +9,7 @@ return function(tokens)
 
   local walk
   local parseSingleExpression
+  local parseNameIndex
 
   local function advance()
     current = current + 1
@@ -22,7 +23,6 @@ return function(tokens)
         return token
       end
     end
-    return false
   end
 
   local function skipToken(...)
@@ -31,7 +31,6 @@ return function(tokens)
       advance()
       return token
     end
-    return false
   end
 
   local function parseBodyUntil(func, ...)
@@ -128,8 +127,26 @@ return function(tokens)
     end
   end
 
+  local function parseExpressionPrefix()
+    return parseInfix()
+    or skipToken('literal-name')
+  end
+
+  local function parseNameIndex()
+    local index = skipToken('index-name') and skipToken('literal-name')
+    if index then
+      return index
+    end
+  end
+
   local function parseVariable()
-    return skipToken('literal-name')
+    local node = parseExpressionPrefix()
+    local index = parseNameIndex()
+    while index do
+      node = { type = 'index-name', prefix = node, index = index }
+      index = parseNameIndex()
+    end
+    return node
   end
 
   local function parseList(nodetype, func, ...)
@@ -182,10 +199,11 @@ return function(tokens)
   end
 
   function parseSingleExpression()
-    return parseAssign()
-      or parseUnary()
+    return parseUnary()
       or parseConditional()
       or parseBlock()
+      or parseAssign()
+      or parseVariable()
       or parseInfix()
       or parseLiteral()
   end
@@ -214,7 +232,7 @@ return function(tokens)
       insert(tree.body, node)
     else
       local token = tokens[current] or { type = 'eof', value = '<eof>' }
-      error(format('unexpected token %q at position %d', token.value, current))
+      error(format('unexpected token %q (%s) at position %d', token.value, token.type, current))
     end
   end
 
