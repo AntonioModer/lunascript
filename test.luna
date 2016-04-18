@@ -39,4 +39,6 @@ a -= 7
 a = b = c = 420
 
 -- varlists / explists
-a, b, c = 1
+test
+a, b, c = 1 + 1, 10 / 2, do 420 end
+test

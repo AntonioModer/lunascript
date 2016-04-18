@@ -142,6 +142,16 @@ return function(tokens)
     return { type = 'variable-list', values = varlist }
   end
 
+  local function parseExpressionList()
+    local explist = {}
+    local exp = walk()
+    while exp do
+      insert(explist, exp)
+      exp = skipToken('list-separator') and walk()
+    end
+    return { type = 'expression-list', values = explist }
+  end
+
   local function parseAssign()
     local pos = current
 
@@ -149,7 +159,7 @@ return function(tokens)
     if varlist then
       local op = skipToken('assign-operator')
       if op then
-        local exp = walk()
+        local exp = parseExpressionList()
         if exp then
           return {
             type = 'assign-expression',
