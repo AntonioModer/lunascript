@@ -27,6 +27,8 @@ return function(tokens)
   local parseNameIndex
   local parseExpressionIndex
   local parseAssign
+  local parseBinaryExpression
+  local parseTerminal
   local walk
 
   function advance()
@@ -292,6 +294,33 @@ return function(tokens)
     current = pos
   end
 
+  function parseBinary()
+    local pos = current
+    local left = parseSingleExpression()
+    if left then
+      local binaryop = skipToken('binary-operator')
+      if binaryop then
+        local right = walk()
+        if right then
+          return {
+            type = 'binary-expression',
+            left = left,
+            op = binaryop.value,
+            right = right,
+          }
+        end
+      end
+    end
+
+    current = pos
+  end
+
+  function parseTerminal()
+    if skipToken('semicolon', 'newline') then
+      return { type = 'terminator' }
+    end
+  end
+
   function parseSingleExpression()
     return parseUnary()
       or parseConditional()
@@ -305,18 +334,11 @@ return function(tokens)
   end
 
   function walk()
-    local node = parseSingleExpression()
+    local exp = parseBinary() or parseSingleExpression()
+    if exp then return exp end
 
-    local binaryop = skipToken('binary-operator')
-    if binaryop then
-      return {
-        type = 'binary-expression',
-        left = node,
-        op = binaryop.value,
-        right = walk(),
-      }
-    else
-      return node
+    if parseTerminal() then
+      return { type = 'empty-expression' }
     end
   end
 
@@ -327,6 +349,7 @@ return function(tokens)
     if node then
       insert(tree.body, node)
     else
+
       local token = tokens[current] or { type = 'eof', value = '<eof>' }
       error(format('unexpected token %q (%s) at position %d', token.value, token.type, current))
     end

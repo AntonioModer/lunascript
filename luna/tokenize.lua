@@ -37,12 +37,17 @@ return function(content)
 
   while current < #content do
     repeat
-      -- white space
-      if pass('%s+') then break end
-
       -- comments (NOTE: match multiline first)
       if pass('%-%-%[%[.-%]%]') then break end
       if pass('%-%-[^\r\n]*') then break end
+
+      -- parse newlines,
+      -- then interpret as expression terminators to prevent ambiguity in some expressions
+      -- mainly function calls
+      if match('[\r\n]+', 'newline') then break end
+
+      -- white space
+      if pass('%s+') then break end
 
       -- vararg
       if match('(%.%.%.)[^%w%.]', 'literal-vararg') then break end
@@ -137,6 +142,10 @@ return function(content)
       if symbol(':', 'index-self') then break end
       if symbol('[', 'index-expression-open') then break end
       if symbol(']', 'index-expression-close') then break end
+
+      -- this has a ton of meanings, so just parse it as itself
+      -- we'll figure the details of it later
+      if symbol(';', 'semicolon') then break end
 
       -- error on unknown characters
       -- TODO: add line position

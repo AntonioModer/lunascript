@@ -61,9 +61,10 @@ Only because I'm annoyed with a few things I can't do with regular Lua, while no
 - `Name` is the lua pattern `[A-Za-z_][A-Za-z0-9_]*`
 - `String` is the lua pattern `%b""`, `%b''`, or `%[%[.-%]%]` (accounting for escape characters)
 - `Number` is the lua pattern `[0-9]*%.[0-9]+`, or `0x[0-9A-Fa-f]`
+- `Newline` is the lua pattern `[\r\n]+`
 
 ```
-block ::= { expression }
+block ::= { expression [ expression-terminator ] }
 
 expression ::=
   infixed-expression |
@@ -137,4 +138,6 @@ table-pair-list ::= table-pair { table-pair-separator table-pair } [table-pair-s
 table-pair ::= '[' expression ']' '=' expression | Name '=' expression | expression
 
 table-pair-separator ::= ',' | ';'
+
+expression-terminator ::= ';' | Newline
 ```
