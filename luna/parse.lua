@@ -69,7 +69,7 @@ return function(tokens)
         end
       end
 
-      while skipToken('else') do
+      if skipToken('else') then
         insert(cases, {
           type = 'default',
           body = parseBodyUntil(checkToken, 'end')
@@ -138,7 +138,7 @@ return function(tokens)
 
   function walk()
     local node = parseSingleExpression()
-    
+
     local binaryop = skipToken('binary-operator')
     if binaryop then
       return {
