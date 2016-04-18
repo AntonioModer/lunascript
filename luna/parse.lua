@@ -138,6 +138,7 @@ return function(tokens)
 
   function walk()
     local node = parseSingleExpression()
+    
     local binaryop = skipToken('binary-operator')
     if binaryop then
       return {
@@ -146,9 +147,9 @@ return function(tokens)
         op = binaryop.value,
         right = walk(),
       }
+    else
+      return node
     end
-
-    return node
   end
 
   local tree = { type = 'block', body = {} }

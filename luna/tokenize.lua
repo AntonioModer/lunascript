@@ -130,7 +130,6 @@ return function(content)
 
       -- error on unknown characters
       -- TODO: add line position
-      print(inspect(tokens))
       error(format('tokenizer: unexpected character %q at %d', content:sub(current, current), current))
     until true
   end
