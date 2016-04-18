@@ -58,6 +58,7 @@ return function(content)
       if keyword('in') then break end
       if keyword('do') then break end
       if keyword('while') then break end
+      if keyword('function') then break end
 
       -- keyword assigns - these don't need non-alphanum characters after
       if match('and=', 'assign-operator') then break end
@@ -133,6 +134,7 @@ return function(content)
 
       -- indexing
       if symbol('.', 'index-name') then break end
+      if symbol(':', 'index-self') then break end
       if symbol('[', 'index-expression-open') then break end
       if symbol(']', 'index-expression-close') then break end
 

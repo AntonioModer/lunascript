@@ -10,6 +10,8 @@ return function(tokens)
   local walk
   local parseSingleExpression
   local parseNameIndex
+  local parseVariableList
+  local parseExpressionList
 
   local function advance()
     current = current + 1
@@ -42,6 +44,25 @@ return function(tokens)
       end
     end
     return body
+  end
+
+  local function parseList(nodetype, func, ...)
+    local list = {}
+    local node = func(...)
+    if node then
+      insert(list, node)
+      while skipToken('list-separator') do
+        node = func(...)
+        if node then
+          insert(list, node)
+        else
+          -- we've found either a missing expression in the list, or a double comma
+          -- we need to return nil so we error out properly
+          return
+        end
+      end
+    end
+    return { type = nodetype, values = list }
   end
 
   local function parseConditional()
@@ -90,6 +111,48 @@ return function(tokens)
     end
   end
 
+  local function parseFunctionName()
+    local token = skipToken('literal-name')
+    local name
+
+    while token do
+      name = (name and name .. '.' or '') .. token.value
+      token = skipToken('index-name') and skipToken('literal-name')
+    end
+
+    local index = skipToken('index-self') and skipToken('literal-name')
+    if index then
+      name = name .. ':' .. index.value
+    end
+
+    return name or ''
+  end
+
+  local function parseFunctionParameters()
+    local varlist
+    if skipToken('infix-open') then
+      varlist = parseVariableList()
+      skipToken('infix-close')
+    end
+    return varlist
+  end
+
+  local function parseFunction()
+    if skipToken('function') then
+      local name = parseFunctionName()
+      local params = parseFunctionParameters()
+      local body = parseBodyUntil(skipToken, 'end')
+      if body then
+        return {
+          type = 'function-expression',
+          name = name,
+          params = params,
+          body = body,
+        }
+      end
+    end
+  end
+
   function parseInfix()
     if skipToken('infix-open') then
       local exp = walk()
@@ -101,7 +164,6 @@ return function(tokens)
 
   function parseLiteral()
     local literal = skipToken(
-      'literal-name',
       'literal-number',
       'literal-string',
       'literal-constant',
@@ -127,7 +189,7 @@ return function(tokens)
     end
   end
 
-  local function parseExpressionPrefix()
+  local function parsePrefixExpression()
     return parseInfix()
     or skipToken('literal-name')
   end
@@ -149,7 +211,7 @@ return function(tokens)
   end
 
   local function parseVariable()
-    local node = parseExpressionPrefix()
+    local node = parsePrefixExpression()
     local index = parseNameIndex() or parseExpressionIndex()
     while index do
       node = { type = 'index-name', prefix = node, index = index }
@@ -158,30 +220,11 @@ return function(tokens)
     return node
   end
 
-  local function parseList(nodetype, func, ...)
-    local node = func(...)
-    if node then
-      local list = {}
-      insert(list, node)
-      while skipToken('list-separator') do
-        node = func(...)
-        if node then
-          insert(list, node)
-        else
-          -- we've found either a missing expression in the list, or a double comma
-          -- we need to return nil so we error out properly
-          return
-        end
-      end
-      return { type = nodetype, values = list }
-    end
-  end
-
-  local function parseVariableList()
+  function parseVariableList()
     return parseList('variable-list', parseVariable)
   end
 
-  local function parseExpressionList()
+  function parseExpressionList()
     return parseList('expression-list', walk)
   end
 
@@ -211,6 +254,7 @@ return function(tokens)
     return parseUnary()
       or parseConditional()
       or parseBlock()
+      or parseFunction()
       or parseAssign()
       or parseVariable()
       or parseInfix()

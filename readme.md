@@ -52,7 +52,7 @@ function-definition ::= 'function' [ function-name ] '(' function-parameters ')'
 
 function-name ::= Name { '.' Name } [ ':' Name ]
 
-function-parameters ::= name-list [',' '...'] | '...'
+function-parameters ::= variable-list [',' '...'] | '...'
 
 function-call ::= expression-prefix '(' expression-list ')'
 

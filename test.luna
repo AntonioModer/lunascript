@@ -47,3 +47,24 @@ foo.bar
 foo.bar.baz
 (foo = bar).baz
 (some *= stuff + 1).foo['bar'][baz / baz / baz] = 'baz' * (hello /= world)
+
+-- function definition
+function empty() end
+function full()
+  test = 'foo'
+  test = 'bar'
+end
+
+function args(a, b, c)
+  -- return 1, 2, 3
+end
+
+-- anon function + varargs
+function() end
+-- function(...)
+--   test1, test2 = ...
+-- end
+
+
+function foo.bar() end
+function foo.bar:baz() end
