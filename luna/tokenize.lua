@@ -35,7 +35,7 @@ return function(content)
     if value then return value end
   end
 
-  while current < #content do
+  while current <= #content do
     repeat
       -- comments (NOTE: match multiline first)
       if pass('%-%-%[%[.-%]%]') then break end
@@ -44,13 +44,13 @@ return function(content)
       -- parse newlines,
       -- then interpret as expression terminators to prevent ambiguity in some expressions
       -- mainly function calls
-      if match('[\r\n]+', 'newline') then break end
+      -- if match('[\r\n]+', 'newline') then break end
 
       -- white space
       if pass('%s+') then break end
 
       -- vararg
-      if match('(%.%.%.)[^%w%.]', 'literal-vararg') then break end
+      if match('(%.%.%.)[^%w%.]?', 'literal-vararg') then break end
 
       -- keywords
       -- NOTE: match keywords before names, or keywords will be matched _as_ names
@@ -92,7 +92,6 @@ return function(content)
       if match("%[%[.-%]%]", 'literal-string') then break end
 
       -- assign operator symbols
-      if symbol('=', 'assign-operator') then break end
       if symbol('+=', 'assign-operator') then break end
       if symbol('-=', 'assign-operator') then break end
       if symbol('*=', 'assign-operator') then break end
@@ -109,10 +108,14 @@ return function(content)
       if symbol('~=', 'binary-operator') then break end
       if symbol('==', 'binary-operator') then break end
 
+      -- assign operator symbols
+      if symbol('=', 'assign-operator') then break end
+
       -- unary operator symbols
       -- NOTE: lua allows unary operators to have spaces before the operand
       -- but for an expression based language, this makes too many ambiguities
-      -- we'll just require these to have no spaces after them to parse them correctly
+      -- we'll just require these to have no spaces after
+      -- to parse them correctly
       if match('(#)%S', 'unary-operator') then break end
       if match('(-)%S', 'unary-operator') then break end
       if match('(~)%S', 'unary-operator') then break end
@@ -149,7 +152,7 @@ return function(content)
 
       -- error on unknown characters
       -- TODO: add line position
-      error(format('tokenizer: unexpected character %q at %d', content:sub(current, current), current))
+      error(format('tokenizer: unexpected character %q at position %d', content:sub(current, current), current))
     until true
   end
 

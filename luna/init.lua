@@ -1,18 +1,21 @@
-local tokenize = require 'luna.tokenize'
-local parse = require 'luna.parse'
-local translate = require 'luna.translate'
-local compile = require 'luna.compile'
-
 local path = ...
-local _, content = io.input(path), io.read('*a'), io.close(), io.input()
+local tokenize = require(path .. '.tokenize')
+local parse = require(path .. '.parse')
+local translate = require(path .. '.translate')
+local compile = require(path .. '.compile')
 
-local tokens = tokenize(content)
-local tree = parse(tokens)
--- local translated = translate(tree)
--- local output = compile(translated)
+local function tolua(source)
+  local tokens = tokenize(source)
+  local tree = parse(tokens)
+  local luatree = translate(tree)
+  local output = compile(luatree)
+  return output
+end
 
-
-local inspect = require 'inspect'
-
--- print(inspect(tokens))
-print(inspect(tree))
+return {
+  tokenize = tokenize,
+  parse = parse,
+  translate = translate,
+  compile = compile,
+  tolua = tolua,
+}
