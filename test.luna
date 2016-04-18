@@ -46,4 +46,4 @@ a, b, c = 1 + 1, 10 / 2
 foo.bar
 foo.bar.baz
 (foo = bar).baz
-(some *= stuff + 1).foo['bar'] = 'baz' * (hello /= world)
+(some *= stuff + 1).foo['bar'][baz / baz / baz] = 'baz' * (hello /= world)

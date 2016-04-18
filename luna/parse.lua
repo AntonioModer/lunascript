@@ -139,12 +139,21 @@ return function(tokens)
     end
   end
 
+  local function parseExpressionIndex()
+    if skipToken('index-expression-open') then
+      local exp = walk()
+      if exp and skipToken('index-expression-close') then
+        return { type = 'index-expression', value = exp }
+      end
+    end
+  end
+
   local function parseVariable()
     local node = parseExpressionPrefix()
-    local index = parseNameIndex()
+    local index = parseNameIndex() or parseExpressionIndex()
     while index do
       node = { type = 'index-name', prefix = node, index = index }
-      index = parseNameIndex()
+      index = parseNameIndex() or parseExpressionIndex()
     end
     return node
   end
