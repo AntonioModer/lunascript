@@ -7,17 +7,33 @@ local inspect = require 'inspect'
 return function(tokens)
   local current = 1
 
-  local walk
+  local advance
+  local checkToken
+  local skipToken
   local parseSingleExpression
+  local parsePrefixExpression
   local parseNameIndex
   local parseVariableList
   local parseExpressionList
+  local parseVariable
+  local parseBodyUntil
+  local parseList
+  local parseConditional
+  local parseBlock
+  local parseFunctionName
+  local parseFunctionParameters
+  local parseFunction
+  local parseUnary
+  local parseNameIndex
+  local parseExpressionIndex
+  local parseAssign
+  local walk
 
-  local function advance()
+  function advance()
     current = current + 1
   end
 
-  local function checkToken(...)
+  function checkToken(...)
     local token = tokens[current]
     if not token then return false end
     for i=1, select('#', ...) do
@@ -27,7 +43,7 @@ return function(tokens)
     end
   end
 
-  local function skipToken(...)
+  function skipToken(...)
     local token = checkToken(...)
     if token then
       advance()
@@ -35,7 +51,7 @@ return function(tokens)
     end
   end
 
-  local function parseBodyUntil(func, ...)
+  function parseBodyUntil(func, ...)
     local body = {}
     while not func(...) do
       local exp = walk()
@@ -46,7 +62,7 @@ return function(tokens)
     return body
   end
 
-  local function parseList(nodetype, func, ...)
+  function parseList(nodetype, func, ...)
     local list = {}
     local node = func(...)
     if node then
@@ -65,7 +81,30 @@ return function(tokens)
     return { type = nodetype, values = list }
   end
 
-  local function parseConditional()
+  function parsePrefixExpression()
+    return parseInfix()
+    or skipToken('literal-name')
+  end
+
+  function parseVariableList()
+    return parseList('variable-list', parseVariable)
+  end
+
+  function parseExpressionList()
+    return parseList('expression-list', walk)
+  end
+
+  function parseVariable()
+    local node = parsePrefixExpression()
+    local index = parseNameIndex() or parseExpressionIndex()
+    while index do
+      node = { type = 'index-name', prefix = node, index = index }
+      index = parseNameIndex() or parseExpressionIndex()
+    end
+    return node
+  end
+
+  function parseConditional()
     if skipToken('if') then
       local cases = {}
 
@@ -102,7 +141,7 @@ return function(tokens)
     end
   end
 
-  local function parseBlock()
+  function parseBlock()
     if skipToken('do') then
       local body = parseBodyUntil(checkToken, 'end')
       if skipToken('end') then
@@ -111,7 +150,7 @@ return function(tokens)
     end
   end
 
-  local function parseFunctionName()
+  function parseFunctionName()
     local token = skipToken('literal-name')
     local name
 
@@ -128,16 +167,26 @@ return function(tokens)
     return name or ''
   end
 
-  local function parseFunctionParameters()
-    local varlist
+  function parseFunctionParameters()
+    local params = {}
     if skipToken('infix-open') then
-      varlist = parseVariableList()
+      local var = parseVariable()
+      while var do
+        insert(params, var)
+        var = skipToken('list-separator') and parseVariable()
+      end
+
+      local vararg = skipToken('literal-vararg')
+      if vararg then
+        insert(params, vararg)
+      end
+
       skipToken('infix-close')
     end
-    return varlist
+    return { node = 'variable-list', values = params }
   end
 
-  local function parseFunction()
+  function parseFunction()
     if skipToken('function') then
       local name = parseFunctionName()
       local params = parseFunctionParameters()
@@ -175,7 +224,7 @@ return function(tokens)
     end
   end
 
-  local function parseUnary()
+  function parseUnary()
     local unaryop = skipToken('unary-operator')
     if unaryop then
       local value = parseSingleExpression()
@@ -189,19 +238,14 @@ return function(tokens)
     end
   end
 
-  local function parsePrefixExpression()
-    return parseInfix()
-    or skipToken('literal-name')
-  end
-
-  local function parseNameIndex()
+  function parseNameIndex()
     local index = skipToken('index-name') and skipToken('literal-name')
     if index then
       return index
     end
   end
 
-  local function parseExpressionIndex()
+  function parseExpressionIndex()
     if skipToken('index-expression-open') then
       local exp = walk()
       if exp and skipToken('index-expression-close') then
@@ -210,25 +254,7 @@ return function(tokens)
     end
   end
 
-  local function parseVariable()
-    local node = parsePrefixExpression()
-    local index = parseNameIndex() or parseExpressionIndex()
-    while index do
-      node = { type = 'index-name', prefix = node, index = index }
-      index = parseNameIndex() or parseExpressionIndex()
-    end
-    return node
-  end
-
-  function parseVariableList()
-    return parseList('variable-list', parseVariable)
-  end
-
-  function parseExpressionList()
-    return parseList('expression-list', walk)
-  end
-
-  local function parseAssign()
+  function parseAssign()
     local pos = current
 
     local varlist = parseVariableList()
