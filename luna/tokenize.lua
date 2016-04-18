@@ -125,8 +125,11 @@ return function(content)
       if symbol('~', 'binary-operator') then break end
 
       -- parens
-      if match('%(', 'infix-open') then break end
-      if match('%)', 'infix-close') then break end
+      if symbol('(', 'infix-open') then break end
+      if symbol(')', 'infix-close') then break end
+
+      -- list separator
+      if symbol(',', 'list-separator') then break end
 
       -- error on unknown characters
       -- TODO: add line position

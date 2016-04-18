@@ -37,3 +37,6 @@ a /= 2
 a -= 7
 
 a = b = c = 420
+
+-- varlists / explists
+a, b, c = 1

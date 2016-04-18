@@ -132,18 +132,28 @@ return function(tokens)
     return skipToken('literal-name')
   end
 
+  local function parseVariableList()
+    local varlist = {}
+    local var = parseVariable()
+    while var do
+      insert(varlist, var)
+      var = skipToken('list-separator') and parseVariable()
+    end
+    return { type = 'variable-list', values = varlist }
+  end
+
   local function parseAssign()
     local pos = current
 
-    local var = parseVariable()
-    if var then
+    local varlist = parseVariableList()
+    if varlist then
       local op = skipToken('assign-operator')
       if op then
         local exp = walk()
         if exp then
           return {
             type = 'assign-expression',
-            left = var,
+            left = varlist,
             right = exp,
             op = op.value,
           }
