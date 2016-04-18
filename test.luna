@@ -1,11 +1,11 @@
 -- match empty blocks
--- do end
+do end
 
 -- match lots of expressions
--- do exp1 exp2 exp3 end
+do exp1 exp2 exp3 end
 
 -- if
-if something then
+if something = test then
   somethingelse
   (test)
 elseif somethingelse then
@@ -28,3 +28,12 @@ false and true
 -#stuff
 #a % b + 1
 ~0xFFFF
+
+-- assignment
+a = 0
+a += 5
+a *= 10
+a /= 2
+a -= 7
+
+a = b = c = 420

@@ -84,10 +84,10 @@ return function(tokens)
 
   local function parseBlock()
     if skipToken('do') then
-      return {
-        type = 'block-expression',
-        body = parseBodyUntil(skipToken, 'end'),
-      }
+      local body = parseBodyUntil(checkToken, 'end')
+      if skipToken('end') then
+        return { type = 'block-expression', body = body }
+      end
     end
   end
 
@@ -128,8 +128,35 @@ return function(tokens)
     end
   end
 
+  local function parseVariable()
+    return skipToken('literal-name')
+  end
+
+  local function parseAssign()
+    local pos = current
+
+    local var = parseVariable()
+    if var then
+      local op = skipToken('assign-operator')
+      if op then
+        local exp = walk()
+        if exp then
+          return {
+            type = 'assign-expression',
+            left = var,
+            right = exp,
+            op = op.value,
+          }
+        end
+      end
+    end
+
+    current = pos
+  end
+
   function parseSingleExpression()
-    return parseUnary()
+    return parseAssign()
+      or parseUnary()
       or parseConditional()
       or parseBlock()
       or parseInfix()
