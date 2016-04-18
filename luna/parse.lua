@@ -132,24 +132,31 @@ return function(tokens)
     return skipToken('literal-name')
   end
 
-  local function parseVariableList()
-    local varlist = {}
-    local var = parseVariable()
-    while var do
-      insert(varlist, var)
-      var = skipToken('list-separator') and parseVariable()
+  local function parseList(nodetype, func, ...)
+    local node = func(...)
+    if node then
+      local list = {}
+      insert(list, node)
+      while skipToken('list-separator') do
+        node = func(...)
+        if node then
+          insert(list, node)
+        else
+          -- we've found either a missing expression in the list, or a double comma
+          -- we need to return nil so we error out properly
+          return
+        end
+      end
+      return { type = nodetype, values = list }
     end
-    return { type = 'variable-list', values = varlist }
+  end
+
+  local function parseVariableList()
+    return parseList('variable-list', parseVariable)
   end
 
   local function parseExpressionList()
-    local explist = {}
-    local exp = walk()
-    while exp do
-      insert(explist, exp)
-      exp = skipToken('list-separator') and walk()
-    end
-    return { type = 'expression-list', values = explist }
+    return parseList('expression-list', walk)
   end
 
   local function parseAssign()
