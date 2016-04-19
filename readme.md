@@ -46,6 +46,7 @@ function bar() foo() end
 var = 5
 ```
 
+- Don't require parentheses for operations on literals, e.g. `white = '#' .. 'F':rep(6)`
 - Assignment operators, `+=`, `-=` and similar
 - Possibly rework loops to make table/array looping less inconvenient and awkward
 - Possible existential operator `?`
