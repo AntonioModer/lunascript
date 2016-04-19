@@ -65,7 +65,6 @@ To fill the desire for a language that's a lot nicer to use, but still feels lik
 - `Name` is the lua pattern `[A-Za-z_][A-Za-z0-9_]*`
 - `String` is the lua pattern `%b""`, `%b''`, or `%[%[.-%]%]` (accounting for escape characters)
 - `Number` is the lua pattern `[0-9]*%.[0-9]+`, or `0x[0-9A-Fa-f]`
-- `Newline` is the lua pattern `[\r\n]+`
 
 ```
 block ::= { expression [ expression-terminator ] }
@@ -144,5 +143,5 @@ table-pair ::= '[' expression ']' '=' expression | Name '=' expression | express
 
 table-pair-separator ::= ',' | ';'
 
-expression-terminator ::= ';' | Newline
+expression-terminator ::= ';'
 ```
