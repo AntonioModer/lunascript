@@ -1,4 +1,4 @@
-## Syntax
+## Syntax (Extended BNF)
 
 - `Name` is the lua pattern `[A-Za-z_][A-Za-z0-9_]*`
 - `String` is the lua pattern `%b""`, `%b''`, or `%[%[.-%]%]` (accounting for escape characters)
@@ -46,24 +46,18 @@ binary-expression ::= expression binary-operator expression
 
 function-definition ::= 'function' [ variable ] '(' function-parameters ')' block 'end'
 
-function-parameters ::= '...' |  variable-list [',' '...']
+function-parameters ::= '...' | variable-list [',' '...']
 
 function-call ::= variable-prefix function-call-suffix { function-call-suffix }
 
-function-call-suffix ::= { variable-index } [ variable-self-index ] '(' expression-list ')'
+function-call-suffix ::= { variable-index } [ ':' Name ] '(' expression-list ')'
 
 
 variable ::= variable-prefix { variable-index }
 
-variable-prefix ::= literal-value | infix-expression
+variable-prefix ::= literal-value | infixed-expression
 
-variable-index ::= variable-name-index | variable-expression-index
-
-variable-name-index ::= '.' Name
-
-variable-self-index ::= ':' Name
-
-variable-expression-index ::= '[' expression ']'
+variable-index ::= '.' Name | '[' expression ']'
 
 variable-list ::= variable { ',' variable }
 
