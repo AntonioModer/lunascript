@@ -1,6 +1,6 @@
 # LunaScript
 
-A language that compiles to Lua
+A language that compiles to Lua. Compiler is a work in progress.
 
 ## Key Features
 

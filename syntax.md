@@ -25,8 +25,6 @@ infixed-expression ::= '(' expression ')'
 
 expression-list ::= expression { ',' expression }
 
-expression-prefix ::= variable | function-call | infixed-expression
-
 
 if-expression ::= 'if' expression 'then' block { 'elseif' block } [ 'else' block ] 'end'
 
@@ -52,12 +50,17 @@ function-name ::= Name { '.' Name } [ ':' Name ]
 
 function-parameters ::= variable-list [',' '...'] | '...'
 
-function-call ::= expression-prefix '(' expression-list ')'
+function-call ::= expression-prefix { variable-index [ ':' Name ] '(' expression-list ')' }
 
 
-variable ::= Name | expression-prefix '[' expression ']' | expression-prefix '.' Name
+variable ::= expression-prefix variable-index
+
+variable-index ::= { '.' Name | '[' expression ']' }
 
 variable-list ::= variable { ',' variable }
+
+
+expression-prefix ::= infix-expression | Name
 
 
 literal-value ::= 'true' | 'false' | 'nil' | '...' | table-definition | Name | String | Number
