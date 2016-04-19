@@ -26,7 +26,7 @@ infixed-expression ::= '(' expression ')'
 expression-list ::= expression { ',' expression }
 
 
-if-expression ::= 'if' expression 'then' block { 'elseif' block } [ 'else' block ] 'end'
+if-expression ::= 'if' expression 'then' block { 'elseif' expression 'then' block } [ 'else' block ] 'end'
 
 for-expression ::= 'for' variable-list 'in' expression-list 'do' block 'end'
 
