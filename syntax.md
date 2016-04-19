@@ -44,23 +44,28 @@ unary-expression ::= unary-operator expression
 binary-expression ::= expression binary-operator expression
 
 
-function-definition ::= 'function' [ function-name ] '(' function-parameters ')' block 'end'
-
-function-name ::= Name { '.' Name } [ ':' Name ]
+function-definition ::= 'function' [ variable ] '(' function-parameters ')' block 'end'
 
 function-parameters ::= variable-list [',' '...'] | '...'
 
-function-call ::= expression-prefix { variable-index [ ':' Name ] '(' expression-list ')' }
+function-call ::= variable-prefix function-call-suffix { function-call-suffix }
+
+function-call-suffix ::= { variable-index } [ variable-self-index ] '(' expression-list ')'
 
 
-variable ::= expression-prefix variable-index
+variable ::= variable-prefix { variable-index }
 
-variable-index ::= { '.' Name | '[' expression ']' }
+variable-prefix ::= Name | infix-expression
+
+variable-index ::= variable-name-index | variable-expression-index
+
+variable-name-index ::= '.' Name
+
+variable-expression-index ::= '[' expression ']'
+
+variable-self-index ::= [ ':' Name ]
 
 variable-list ::= variable { ',' variable }
-
-
-expression-prefix ::= infix-expression | Name
 
 
 literal-value ::= 'true' | 'false' | 'nil' | '...' | table-definition | Name | String | Number
