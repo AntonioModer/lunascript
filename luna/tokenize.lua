@@ -26,8 +26,15 @@ return function(content)
   end
 
   local function keyword(word, tokentype)
-    -- the type of a keyword is the word itself by default
-    return match('(' .. word .. ')%W', tokentype or word)
+    local tokentype = tokentype or word -- the type of a keyword is the word itself by default
+    local pos = current
+    local capture = pass('%w+')
+    if capture == word then
+      insert(tokens, { type = tokentype, value = capture })
+      return true
+    else
+      current = pos
+    end
   end
 
   local function symbol(op, tokentype)
@@ -64,6 +71,10 @@ return function(content)
       if keyword('do') then break end
       if keyword('while') then break end
       if keyword('function') then break end
+      if keyword('break') then break end
+      if keyword('return') then break end
+      if keyword('repeat') then break end
+      if keyword('until') then break end
 
       -- keyword assigns - these don't need non-alphanum characters after
       if match('and=', 'assign-operator') then break end
@@ -91,12 +102,14 @@ return function(content)
       if match("%b''", 'literal-string') then break end
       if match("%[%[.-%]%]", 'literal-string') then break end
 
-      -- assign operator symbols
+      -- assign operator symbols (3 char)
+      if symbol('..=', 'assign-operator') then break end
+
+      -- assign operator symbols (2 char)
       if symbol('+=', 'assign-operator') then break end
       if symbol('-=', 'assign-operator') then break end
       if symbol('*=', 'assign-operator') then break end
       if symbol('/=', 'assign-operator') then break end
-      if symbol('..=', 'assign-operator') then break end
 
       -- binary operator symbols (2 char)
       if symbol('//', 'binary-operator') then break end
@@ -108,7 +121,7 @@ return function(content)
       if symbol('~=', 'binary-operator') then break end
       if symbol('==', 'binary-operator') then break end
 
-      -- assign operator symbols
+      -- assign operator symbols (1 char)
       if symbol('=', 'assign-operator') then break end
 
       -- unary operator symbols
@@ -117,7 +130,7 @@ return function(content)
       -- we'll just require these to have no spaces after
       -- to parse them correctly
       if match('(#)%S', 'unary-operator') then break end
-      if match('(-)%S', 'unary-operator') then break end
+      if match('(%-)%S', 'unary-operator') then break end
       if match('(~)%S', 'unary-operator') then break end
 
       -- binary operator symbols (1 char)
