@@ -1,6 +1,10 @@
 local tokenize = require 'luna'.tokenize
 
 describe('tokenizer', function()
+  it('parses an empty string', function()
+    assert.are.same(tokenize(''), {})
+  end)
+
   it('ignores comments', function()
     assert.are.same(tokenize('--'), {})
     assert.are.same(tokenize('-- hello world'), {})
