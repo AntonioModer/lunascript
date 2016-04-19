@@ -55,7 +55,10 @@ var = 5
 
 ## Why?
 
-Only because I'm annoyed with a few things I can't do with regular Lua, while not wanting to use another full-blown entirely different language that has its own sets of limitations and lack of considerations when it comes to some things.
+To fill the desire for a language that's a lot nicer to use, but still feels like Lua. Therefore:
+- Focus on readability, and keywords over symbols, instead of unappealing c-style "syntax confetti"
+- Try to update the language a little to fit with other procedural languages today
+- Try to stay mostly backwards compatible with Lua, and keep the spirit of the language.
 
 ## Syntax
 
