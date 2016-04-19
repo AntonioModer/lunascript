@@ -51,11 +51,10 @@ var = 5
 - Possibly rework loops to make table/array looping less inconvenient and awkward
 - Possible existential operator `?`
 - Some other things stolen from MoonScript and other languages because being creative is hard ¯\\\_(ツ)\_/¯
-- Anything else that can be answered with 'Why not?'
 
 ## Why?
 
 To fill the desire for a language that's a lot nicer to use, but still feels like Lua. Therefore:
 - Focus on readability, and keywords over symbols, instead of unappealing c-style "syntax confetti"
 - Try to update the language a little to fit with other procedural languages today
-- Try to stay mostly backwards compatible with Lua, and keep the spirit of the language.
+- Flexibility. And just allowing whatever makes syntactic sense.
