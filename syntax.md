@@ -5,7 +5,7 @@
 - `Number` is the lua pattern `[0-9]*%.[0-9]+`, or `0x[0-9A-Fa-f]`
 
 ```
-block ::= { expression [ expression-terminator ] }
+block ::= { expression [ ';' ] }
 
 expression ::=
   infixed-expression |
@@ -46,7 +46,7 @@ binary-expression ::= expression binary-operator expression
 
 function-definition ::= 'function' [ variable ] '(' function-parameters ')' block 'end'
 
-function-parameters ::= variable-list [',' '...'] | '...'
+function-parameters ::= '...' |  variable-list [',' '...']
 
 function-call ::= variable-prefix function-call-suffix { function-call-suffix }
 
@@ -55,15 +55,15 @@ function-call-suffix ::= { variable-index } [ variable-self-index ] '(' expressi
 
 variable ::= variable-prefix { variable-index }
 
-variable-prefix ::= Name | infix-expression
+variable-prefix ::= literal-value | infix-expression
 
 variable-index ::= variable-name-index | variable-expression-index
 
 variable-name-index ::= '.' Name
 
-variable-expression-index ::= '[' expression ']'
+variable-self-index ::= ':' Name
 
-variable-self-index ::= [ ':' Name ]
+variable-expression-index ::= '[' expression ']'
 
 variable-list ::= variable { ',' variable }
 
@@ -88,6 +88,4 @@ table-pair-list ::= table-pair { table-pair-separator table-pair } [table-pair-s
 table-pair ::= '[' expression ']' '=' expression | Name '=' expression | expression
 
 table-pair-separator ::= ',' | ';'
-
-expression-terminator ::= ';'
 ```
