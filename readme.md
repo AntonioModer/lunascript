@@ -98,4 +98,8 @@ try first(1, 2, 3), second(1, 2, 3), third(1, 2, 3)
 -- rest: automatic ... assign to array
 fun rests(head, ...rest)
   print head, rest[#rest]
+
+-- tables
+-- ...
+-- ¯\_(ツ)_/¯
 ```
