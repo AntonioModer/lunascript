@@ -11,6 +11,8 @@ high = 5
 hello = 'world'
 a, b, c = 1, 2, 3
 
+global Constant = 'IMPORTANT GLOBAL VALUE'
+
 -- assignment operators
 counter or= math.huge
 counter and= 0
