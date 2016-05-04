@@ -51,6 +51,7 @@ while frustrated()
   scream()
 
 -- nicer table loops with `of`
+-- only works with arrays
 items = { 'eggs', 'milk', 'cheese', 'bread' }
 for item, i of items
   print i .. ': ' .. item
