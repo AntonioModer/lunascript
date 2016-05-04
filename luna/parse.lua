@@ -39,8 +39,8 @@ function parse.lex(source, identity)
         end
       end
 
-      local function matchKeyword(keyword)
-        return match('%l+') == keyword and matchToken(keyword, keyword)
+      local function matchKeyword(keyword, tokentype)
+        return match('%l+') == keyword and matchToken(keyword, tokentype or keyword)
       end
 
       local function matchString()
@@ -73,6 +73,11 @@ function parse.lex(source, identity)
         -- string
         or matchString()
 
+        -- keyword assignment operators
+        or matchToken('and=', 'assign-operator')
+        or matchToken('or=', 'assign-operator')
+
+        -- control keywords
         or matchKeyword('if')
         or matchKeyword('then')
         or matchKeyword('elseif')
@@ -92,6 +97,33 @@ function parse.lex(source, identity)
 
         -- name
         or matchToken('[%a_][%w_]*', 'literal-name')
+
+        -- vararg literal
+        or matchToken('%.%.%.', 'literal-vararg')
+
+        -- comparison operators
+        or matchToken('>=', 'binary-operator')
+        or matchToken('<=', 'binary-operator')
+        or matchToken('==', 'binary-operator')
+        or matchToken('~=', 'binary-operator')
+        or matchToken('<', 'binary-operator')
+        or matchToken('>', 'binary-operator')
+
+        -- assign operators
+        or matchToken('%.%.=', 'assign-concat')
+        or matchToken('%+=', 'assign-add')
+        or matchToken('%-=', 'assign-sub')
+        or matchToken('%*=', 'assign-mul')
+        or matchToken('%/=', 'assign-div')
+        or matchToken('%=', 'assign-equals')
+
+        -- binary operators
+        or matchToken('%.%.', 'binary-operator')
+        or matchToken('//', 'binary-operator')
+        or matchToken('/', 'binary-operator')
+        or matchToken('%+', 'binary-operator')
+        or matchToken('%-', 'binary-operator')
+        or matchToken('%*', 'binary-operator')
 
         then
         else

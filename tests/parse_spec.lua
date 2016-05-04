@@ -44,20 +44,10 @@ describe('parser', function()
 
   it('matches keywords', function()
     local keywords = {
-      'if',
-      'then',
-      'elseif',
-      'else',
-      'local',
-      'global',
-      'while',
-      'do',
-      'fun',
-      'is',
-      'isnt',
-      'and',
-      'or',
-      'not',
+      'do', 'while', 'fun',
+      'if', 'then', 'elseif', 'else',
+      'local', 'global',
+      'is', 'isnt', 'and', 'or', 'not',
     }
 
     local lines = parse.lex(table.concat(keywords, ' '))
