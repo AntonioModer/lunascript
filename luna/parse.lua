@@ -69,6 +69,9 @@ function parse.lex(source, identity)
         -- string
         or matchString()
 
+        -- name
+        or matchToken('[%a_][%w_]*', 'literal-name')
+
         then
         else
           local errformat = "[%s] Syntax error: unknown character %q (line %d col %d)"

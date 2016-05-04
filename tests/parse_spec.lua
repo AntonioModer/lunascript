@@ -32,4 +32,13 @@ describe('parser', function()
     assert.are.equal("'wor\\\'ld'", tokens[2].value)
     assert.are.equal("[[t\\\[\[es\\\]\]ti]\\\]ng\]\]", tokens[3].value)
   end)
+
+  it('matches names', function()
+    local lines = parse.lex('some V4R14BL3 _n_a_m_e_s_')
+    local tokens = lines[1].tokens
+
+    assert.are.equal('some', tokens[1].value)
+    assert.are.equal('V4R14BL3', tokens[2].value)
+    assert.are.equal('_n_a_m_e_s_', tokens[3].value)
+  end)
 end)
