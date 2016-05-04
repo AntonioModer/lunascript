@@ -57,4 +57,8 @@ describe('parser', function()
       assert.are.equal(keyword, tokens[i].value)
     end
   end)
+
+  it('matches symbols', function()
+    -- TODO
+  end)
 end)
