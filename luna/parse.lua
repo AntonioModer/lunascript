@@ -39,6 +39,10 @@ function parse.lex(source, identity)
         end
       end
 
+      local function matchKeyword(keyword)
+        return match('%l+') == keyword and matchToken(keyword, keyword)
+      end
+
       local function matchString()
         local head = pass('"') or pass("'") or pass('%[%[')
         if head then
@@ -57,7 +61,7 @@ function parse.lex(source, identity)
         if pass('%s+')
 
         -- hex numbers
-        or matchToken('0x[%da-fA-F]+', 'literal-number')
+        or matchToken('0x%x+', 'literal-number')
 
         -- scientific notation
         or matchToken('%d*%.?%d+e%d+', 'literal-number')
@@ -68,6 +72,23 @@ function parse.lex(source, identity)
 
         -- string
         or matchString()
+
+        or matchKeyword('if')
+        or matchKeyword('then')
+        or matchKeyword('elseif')
+        or matchKeyword('else')
+        or matchKeyword('local')
+        or matchKeyword('global')
+        or matchKeyword('while')
+        or matchKeyword('do')
+        or matchKeyword('fun')
+
+        -- keyword operators
+        or matchKeyword('is', 'binary-operator')
+        or matchKeyword('isnt', 'binary-operator')
+        or matchKeyword('and', 'binary-operator')
+        or matchKeyword('or', 'binary-operator')
+        or matchKeyword('not', 'unary-operator')
 
         -- name
         or matchToken('[%a_][%w_]*', 'literal-name')

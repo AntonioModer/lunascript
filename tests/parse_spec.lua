@@ -41,4 +41,30 @@ describe('parser', function()
     assert.are.equal('V4R14BL3', tokens[2].value)
     assert.are.equal('_n_a_m_e_s_', tokens[3].value)
   end)
+
+  it('matches keywords', function()
+    local keywords = {
+      'if',
+      'then',
+      'elseif',
+      'else',
+      'local',
+      'global',
+      'while',
+      'do',
+      'fun',
+      'is',
+      'isnt',
+      'and',
+      'or',
+      'not',
+    }
+
+    local lines = parse.lex(table.concat(keywords, ' '))
+    local tokens = lines[1].tokens
+
+    for i, keyword in ipairs(keywords) do
+      assert.are.equal(keyword, tokens[i].value)
+    end
+  end)
 end)
