@@ -1,3 +1,5 @@
+io.stdout:setvbuf('no')
+
 local parse = require 'luna.parse'
 
 describe('parser', function()
@@ -11,13 +13,23 @@ describe('parser', function()
 
   it('matches numbers', function()
     local lines = parse.lex('420 .69 3.14159 0xDEADBEEF 5e100 314159E-5 1E+100')
+    local tokens = lines[1].tokens
 
-    assert.are.equal(lines[1].tokens[1].value, '420')
-    assert.are.equal(lines[1].tokens[2].value, '.69')
-    assert.are.equal(lines[1].tokens[3].value, '3.14159')
-    assert.are.equal(lines[1].tokens[4].value, '0xDEADBEEF')
-    assert.are.equal(lines[1].tokens[5].value, '5e100')
-    assert.are.equal(lines[1].tokens[6].value, '314159E-5')
-    assert.are.equal(lines[1].tokens[7].value, '1E+100')
+    assert.are.equal('420', tokens[1].value)
+    assert.are.equal('.69', tokens[2].value)
+    assert.are.equal('3.14159', tokens[3].value)
+    assert.are.equal('0xDEADBEEF', tokens[4].value)
+    assert.are.equal('5e100', tokens[5].value)
+    assert.are.equal('314159E-5', tokens[6].value)
+    assert.are.equal('1E+100', tokens[7].value)
+  end)
+
+  it('matches strings and accounts for escapes', function()
+    local lines = parse.lex("\"hel\\\"lo\" 'wor\\\'ld' [[t\\\[\[es\\\]\]ti]\\\]ng]]")
+    local tokens = lines[1].tokens
+
+    assert.are.equal('"hel\\"lo"', tokens[1].value)
+    assert.are.equal("'wor\\\'ld'", tokens[2].value)
+    assert.are.equal("[[t\\\[\[es\\\]\]ti]\\\]ng\]\]", tokens[3].value)
   end)
 end)

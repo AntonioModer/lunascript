@@ -1,5 +1,9 @@
 local parse = {}
 
+local function escape(str)
+  return str:gsub('([%%%^%$%(%)%.%[%]%*%+%-%?])', '%%%1')
+end
+
 function parse.lex(source, identity)
   identity = identity or 'luna'
 
@@ -12,34 +16,60 @@ function parse.lex(source, identity)
       local tokens = {}
       local current = indentation + 1
 
-      local function match(pattern, tokentype)
+      local function match(pattern)
         local position, value, capture = line:match('()(' .. pattern .. ')', current)
         if position == current then
-          value = capture or value
-          return { type = tokentype, value = value }
+          return capture or value
+        end
+      end
+
+      local function pass(pattern)
+        local value = match(pattern)
+        if value then
+          current = current + #value
+          return value
+        end
+      end
+
+      local function matchToken(pattern, tokentype)
+        local value = pass(pattern)
+        if value then
+          table.insert(tokens, { type = tokentype, value = value })
+          return true
+        end
+      end
+
+      local function matchString()
+        local head = pass('"') or pass("'") or pass('%[%[')
+        if head then
+          local tail = head == '[[' and ']]' or head
+          local content = {}
+          while not pass(escape(tail)) do
+            table.insert(content, pass('\\.') or pass('.'))
+          end
+          table.insert(tokens, { type = 'literal-string', value = head .. table.concat(content) .. tail })
+          return true
         end
       end
 
       while current <= #line do
-        local token =
-          -- whitespace
-          match('%s+')
+        -- white space
+        if pass('%s+')
 
-          -- hex numbers
-          or match('0x[%da-fA-F]+', 'literal-number')
+        -- hex numbers
+        or matchToken('0x[%da-fA-F]+', 'literal-number')
 
-          -- scientific notation
-          or match('%d*%.?%d+e%d+', 'literal-number')
-          or match('%d*%.?%d+E[%+%-]%d+', 'literal-number')
+        -- scientific notation
+        or matchToken('%d*%.?%d+e%d+', 'literal-number')
+        or matchToken('%d*%.?%d+E[%+%-]%d+', 'literal-number')
 
-          -- decimal numbers
-          or match('%d*%.?%d+', 'literal-number')
+        -- decimal numbers
+        or matchToken('%d*%.?%d+', 'literal-number')
 
-        if token then
-          if token.type then
-            table.insert(tokens, token)
-          end
-          current = current + #token.value
+        -- string
+        or matchString()
+
+        then
         else
           local errformat = "[%s] Syntax error: unknown character %q (line %d col %d)"
           local errmsg = errformat:format(identity, line:sub(current, current), linenum, current)
