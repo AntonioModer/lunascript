@@ -1,3 +1,3 @@
 cmd: 'busted'
-args: ['-o', 'utfTerminal', 'tests/*.lua']
+args: ['-o', 'utfTerminal', 'tests']
 sh: true
