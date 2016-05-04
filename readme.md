@@ -145,7 +145,7 @@ print origin.count --> nil
 -- theoretical compiled lua
 local Point
 do
-  local __class = {}
+  local __class = { __name = 'Point' }
   local __static = {}
 
   for k,v in pairs(Super) do
@@ -179,7 +179,7 @@ do
   end
 
   local function __call(_, ...)
-    local __instance = setmetatable({}, { __index = __class })
+    local __instance = setmetatable({ __class = __class }, { __index = __class })
     if __instance.new then
       __instance:new(...)
     end
