@@ -4,7 +4,7 @@ A language that compiles to Lua, based largely on MoonScript and CoffeeScript. C
 
 ## Language Rundown
 
-```
+```lua
 -- variables
 -- localized automatically at head of scope (local high, hello, a, b, c)
 high = 5
