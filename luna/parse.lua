@@ -1,34 +1,36 @@
 local parse = {}
 
-function parse.lex(source)
+function parse.lex(source, identity)
+  identity = identity or 'luna'
+
   local lines = {}
   local linenum = 1
 
   for line in source:gmatch('[^\r\n]+') do
     if line:match('%s+') ~= line then
-      local indentation = #line:match('^%s+')
+      local indentation = #line:match('^%s*')
       local tokens = {}
-      local current = level
+      local current = indentation + 1
 
-      -- local function match(pattern, tokentype)
-      --   local position, value, capture = line:match('()(' .. pattern .. ')', current)
-      --   if position == current then
-      --     value = capture or value
-      --     local token = { type = tokentype, value = value }
-      --     table.insert(tokens, token)
-      --     current = current + #value
-      --     return token
-      --   end
-      -- end
+      local function match(pattern, tokentype)
+        local position, value, capture = line:match('()(' .. pattern .. ')', current)
+        if position == current then
+          value = capture or value
+          return { type = tokentype, value = value }
+        end
+      end
 
-      -- while current <= #line do
-      --   if true then
-      --   else
-      --     local errformat = "[%s] Syntax error: unknown character %q (line %d col %d)"
-      --     local errmsg = errformat:format(identity, line:sub(current, current), linenum, current)
-      --     error(errmsg, 0)
-      --   end
-      -- end
+      while current <= #line do
+        local token = match('%d+', 'number')
+        if token then
+          table.insert(tokens, token)
+          current = current + #token.value
+        else
+          local errformat = "[%s] Syntax error: unknown character %q (line %d col %d)"
+          local errmsg = errformat:format(identity, line:sub(current, current), linenum, current)
+          error(errmsg, 0)
+        end
+      end
 
       local lineinfo = { tokens = tokens, indentation = indentation, num = linenum }
       table.insert(lines, lineinfo)
