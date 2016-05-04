@@ -7,13 +7,12 @@ end
 function parse.lex(source, identity)
   identity = identity or 'luna'
 
-  local lines = {}
+  local tokens = {}
   local linenum = 1
 
   for line in source:gmatch('[^\r\n]+') do
     if line:match('%s+') ~= line then
       local indentation = #line:match('^%s*')
-      local tokens = {}
       local current = indentation + 1
 
       local function match(pattern)
@@ -132,9 +131,7 @@ function parse.lex(source, identity)
           error(errmsg, 0)
         end
       end
-
-      local lineinfo = { tokens = tokens, indentation = indentation, num = linenum }
-      table.insert(lines, lineinfo)
+      
       linenum = linenum + 1
     end
   end

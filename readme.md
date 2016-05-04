@@ -13,6 +13,9 @@ a, b, c = 1, 2, 3
 
 global Constant = 'IMPORTANT GLOBAL VALUE'
 
+-- names can have dashes, compiles to camelCase equivalent
+assert high-five == highFive
+
 -- assignment operators
 counter or= math.huge
 counter and= 0
@@ -20,13 +23,57 @@ counter += 1
 counter *= 9999
 counter /= 0 -- oops
 
+-- functions
+say-hello = -> print 'hello'
+add = (a, b) -> a + b
+
+-- drop parentheses on single arg
+square = n -> n * n
+
 -- drop parens on function calls w/ args
 call something, using, stuff
 
+-- table literals
+song = {'do', 're', 'mi', 'fa', 'so'}
+
+-- newlines replace commas
+bits = {
+  1, 0, 1
+  0, 0, 1
+  1, 1, 0
+}
+
+-- literal keys need no braces
+countries = {
+  'United States' = {
+    size = 'big'
+    population = 'a lot'
+  }
+  'England' = {
+    size = 'not as big'
+    population = 'probably smaller'
+  }
+}
+importantNumbers = {
+  3.14 = 'pi'
+  42 = 'life'
+  420 = 'blaze it'
+}
+
+test = {
+  {
+    'hello'
+    'world'
+  } = {
+    'foo'
+    'bar'
+  }
+}
+
 -- conditions + some English-readable operator aliases
-if world is 'safe' -- ==
+if world is 'safe'
   chill()
-elseif world isnt 'stable' -- ~=
+elseif world isnt 'stable'
   panic()
 else
   cry()
@@ -40,41 +87,50 @@ switch value
   else
     print 'value is too damn high'
 
--- loops
-for i = 99, 0, -1
-  print i .. ' bottles of beer on the wall'
+-- normal lua iterator loops
+for char in "hello world":gmatch '.'
+  print char
 
-for i, v in ipairs { 1, 2, 3 }
-  print i, v
-
+-- while loop
 while frustrated()
   scream()
 
 -- nicer table loops with `of`
--- only works with arrays
+-- loops through all key/value pairs
+-- value before index
 items = { 'eggs', 'milk', 'cheese', 'bread' }
 for item, i of items
   print i .. ': ' .. item
 
--- range syntax
-hundred = 1 to 100 -- {1, 2, ..., 100}
+scores =
+  'Player 1' = 5
+  'Player 2' = 10
 
-for num of hundred
-  if num % 2 isnt 0
-    print num .. ' is odd!'
+for score, player of scores
+  print player .. ' scored ' .. score
 
--- `step` keyword
--- intelligently compiles to `for i=101, 1, -2 do ... end`
-for num of 101 to 1 step -2
-  print num .. ' is most definitely odd'
+-- ranges
+for num of 1 to 10
+  print num
 
 -- comprehensions
-evens = every n for n of 1 to 100 while n % 2 is 0
+letters = every letter for letter in sentence:gmatch '.'
 
--- or multiline, if you prefer
-evens = every n
-  for n of 1 to 100
-  while n % 2 is 0
+-- short form
+letters = every letter in sentence:gmatch '.'
+
+-- conditions
+vowels = every vowel of letters when 'aeiou':find vowel
+
+-- split it up on lines
+vowels = every vowel
+  for vowel of letters
+  when 'aeiou':find vowel
+
+-- expressionize it
+gibberish = table.concat every vowel
+  for vowel of letters
+  when 'aeiou':find vowel
 
 -- recursion
 coords = every {x, y}
@@ -83,30 +139,6 @@ coords = every {x, y}
   --> { {1, 1}, {1, 2}, ... }
 
 -- give two values to assign key/value pairs
-hashed = pos, true for pos of coords
+hashed = every pos, true for pos of coords
   --> { [{1, 1}] = true, [{1, 2}] = true, ... }
-
--- fun functions!
-fun hello
-  print 'world', 1, 2, 3
-
-fun test(something)
-  something 1, 2
-
-test fun(a, b) print a + b --> 3
-
--- allow parens to remove ambiguity
-try first(1, 2, 3), second(1, 2, 3), third(1, 2, 3)
-
--- rest: automatic ... assign to array
-fun rests(head, ...rest)
-  print head, rest[#rest]
-
--- `method` to accept implicit self
-method move(distance)
-  self.position += distance
-
--- tables
--- ...
--- ¯\_(ツ)_/¯
 ```
