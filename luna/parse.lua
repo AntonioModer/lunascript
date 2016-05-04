@@ -21,9 +21,24 @@ function parse.lex(source, identity)
       end
 
       while current <= #line do
-        local token = match('%d+', 'number')
+        local token =
+          -- whitespace
+          match('%s+')
+
+          -- hex numbers
+          or match('0x[%da-fA-F]+', 'literal-number')
+
+          -- scientific notation
+          or match('%d*%.?%d+e%d+', 'literal-number')
+          or match('%d*%.?%d+E[%+%-]%d+', 'literal-number')
+
+          -- decimal numbers
+          or match('%d*%.?%d+', 'literal-number')
+
         if token then
-          table.insert(tokens, token)
+          if token.type then
+            table.insert(tokens, token)
+          end
           current = current + #token.value
         else
           local errformat = "[%s] Syntax error: unknown character %q (line %d col %d)"
