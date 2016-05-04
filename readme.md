@@ -4,36 +4,65 @@ A language that compiles to Lua, based largely on MoonScript and CoffeeScript. C
 
 ## Language Rundown
 
-```lua
--- variables
--- localized automatically at head of scope (local high, hello, a, b, c)
+### Variables and Scope
+Variables are automatically localized at the head of scope.
+```moon
 high = 5
 hello = 'world'
 a, b, c = 1, 2, 3
+```
+```lua
+local high, hello, a, b, c
+high = 5
+hello = 'world'
+a, b, c = 1, 2, 3
+```
 
-global Constant = 'IMPORTANT GLOBAL VALUE'
+Scopes underneath will try to reach the variables above them. Use `local` to prevent this.
+```moon
+foo = 'bar'
+do
+  foo = 'baz'
+print foo --> 'baz'
 
--- names can have dashes, compiles to camelCase equivalent
-assert high-five == highFive
+do
+  local foo = 'bullshit'
+print foo --> 'baz'
+```
 
--- assignment operators
-counter or= math.huge
-counter and= 0
+Use `global` for non-locals.
+```moon
+global Constant = "Important Value"
+```
+
+### Assignment Operators
+```moon
 counter += 1
-counter *= 9999
-counter /= 0 -- oops
+```
 
--- functions
-say-hello = -> print 'hello'
+Available: `+=`, `-=`, `*=`, `/=`, `..=`, `and=`, `or=`
+
+## Equality Operator Aliases
+```moon
+assert 10 == 10
+assert 10 is 10
+
+assert 0 ~= 100
+assert 0 isnt 100
+```
+
+### Functions
+```moon
+sayHello = -> print 'hello'
+
 add = (a, b) -> a + b
 
--- drop parentheses on single arg
+-- can drop parentheses with only one argument
 square = n -> n * n
+```
 
--- drop parens on function calls w/ args
-call something, using, stuff
-
--- table literals
+### Tables
+```moon
 song = {'do', 're', 'mi', 'fa', 'so'}
 
 -- newlines replace commas
@@ -59,26 +88,20 @@ importantNumbers = {
   42 = 'life'
   420 = 'blaze it'
 }
+```
 
-test = {
-  {
-    'hello'
-    'world'
-  } = {
-    'foo'
-    'bar'
-  }
-}
-
--- conditions + some English-readable operator aliases
+### Conditions
+```moon
 if world is 'safe'
   chill()
 elseif world isnt 'stable'
   panic()
 else
   cry()
+```
 
--- switch statement
+### Switch
+```moon
 switch value
   when 1
     print 'value is 1'
@@ -86,59 +109,86 @@ switch value
     print 'value is 2'
   else
     print 'value is too damn high'
+```
 
--- normal lua iterator loops
+### Iterator Loops: `for ... in`
+Lua iterator loop:
+```moon
 for char in "hello world":gmatch '.'
   print char
+```
 
--- while loop
-while frustrated()
-  scream()
-
--- nicer table loops with `of`
--- loops through all key/value pairs
--- value before index
+### Array Table Loops: `for ... of`
+```moon
 items = { 'eggs', 'milk', 'cheese', 'bread' }
-for item, i of items
-  print i .. ': ' .. item
 
-scores =
-  'Player 1' = 5
-  'Player 2' = 10
+print 'we need:'
+for item of items
+  print item
+```
 
-for score, player of scores
-  print player .. ' scored ' .. score
+### Ranges
+```moon
+for n of 1 to 10
+  print n .. ' is a number'
 
--- ranges
-for num of 1 to 10
-  print num
+for n of 2 to 10 by 2
+  print n .. ' is an even number'
 
--- comprehensions
+-- assign it to a table
+hundred = 1 to 100
+```
+
+### Slices
+```moon
+slice = content[1 to 10]
+everyOther = content[1 to 10 by 2]
+reversed = content[10 to 1 by -1]
+reversed = content[10 to 1] -- implicit -1 when the second number is less than the first
+
+firstTen = content[to 10] -- if omitted, starts at 1
+```
+
+Using the `#` operator for the length of the table.
+```moon
+copy = content[to #]
+reversed = content[# to 1]
+```
+
+### While
+```moon
+while notEnoughMoney()
+  getMoney()
+```
+
+### Comprehensions using `every`
+```moon
+numbers = every number for number of numbers
 letters = every letter for letter in sentence:gmatch '.'
 
--- short form
-letters = every letter in sentence:gmatch '.'
+-- short form:
+numbers = every number of numbers
+letter = every letter in sentence:gmatch '.'
 
--- conditions
-vowels = every vowel of letters when 'aeiou':find vowel
+-- conditions with `when`
+vowels = every letter in sentence:gmatch '.' when 'aeiou':find letter
 
--- split it up on lines
-vowels = every vowel
-  for vowel of letters
-  when 'aeiou':find vowel
+-- multiline: split `for` and `when` on their own line
+vowels = every letter
+  for letter in sentence:gmatch '.'
+  when 'aeiou':find letter
 
--- expressionize it
-gibberish = table.concat every vowel
-  for vowel of letters
-  when 'aeiou':find vowel
-
--- recursion
-coords = every {x, y}
+-- recursive
+grid = every {x, y}
   for x of 1 to 100
   for y of 1 to 100
-  --> { {1, 1}, {1, 2}, ... }
 
--- give two values to assign key/value pairs
-hashed = every pos, true for pos of coords
-  --> { [{1, 1}] = true, [{1, 2}] = true, ... }
+-- return two values for key-value pairs
+people = {
+  { name = 'Bob',   status = 'Happy' }
+  { name = 'Larry', status = 'Sad' }
+}
+
+statusMap = every person.name, person.status
+  for person of people
 ```
