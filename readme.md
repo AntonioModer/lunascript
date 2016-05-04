@@ -187,7 +187,7 @@ do
     return __instance
   end
 
-  local function __index(_, key, value)
+  local function __index(_, key)
     return rawget(__static, key)
   end
 
