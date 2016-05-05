@@ -24,6 +24,7 @@ local function transformBlock(node)
     for name in pairs(scope) do
       table.insert(locals, name)
     end
+    table.sort(locals)
     table.insert(output.body, 1, { type = 'local', namelist = locals })
 
     return output

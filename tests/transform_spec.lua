@@ -13,7 +13,7 @@ describe('luna.transform', function()
   it('transforms luna into a lua AST', function()
     assert.are.same({
       body = { {
-          namelist = { "a", "hello", "c", "b" },
+          namelist = { "a", "b", "c", "hello" },
           type = "local"
         }, {
           explist = { "'world'" },
