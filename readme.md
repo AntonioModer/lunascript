@@ -35,6 +35,24 @@ Use `global` for non-locals.
 global Constant = "Important Value"
 ```
 
+Wildcards:
+```moon
+value = 10
+
+do
+  local * -- don't read anything from above scope
+  value = 20
+  value += 1
+  print value --> 21
+
+do
+  global * -- make every variable in here global
+  haveCake = true
+
+print value --> 10
+print haveCake --> true
+```
+
 ### Assignment Operators
 ```moon
 counter += 1
