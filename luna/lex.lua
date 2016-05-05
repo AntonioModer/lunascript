@@ -3,9 +3,9 @@ local tokendef = require 'luna.tokens'
 local function lex(source)
   local current = 1
 
-  local function match(pattern, cond)
+  local function match(pattern, find)
     local position, value = source:match('()(' .. pattern .. ')', current)
-    if position == current and (cond == nil or cond == true) then
+    if position == current and (find == nil or find == value) then
       current = current + #value
       return value
     end
@@ -27,7 +27,7 @@ local function lex(source)
 
         if head then
           if info.pattern then
-            local value = match(info.pattern, info.find == nil or info.find == value)
+            local value = match(info.pattern, info.find)
             if value then
               token = { type = info.type, value = head .. value }
               break
