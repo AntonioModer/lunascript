@@ -4,6 +4,11 @@ local source = [[
 hello = 'world'
 high = 5
 
+multi = """
+cake is
+lovely
+"""
+
 if happy
   dance()
 else
@@ -34,6 +39,12 @@ describe('luna.lex', function()
       { type = "assign", value = "=" },
       { type = "space", value = " " },
       { type = "number", value = "5" },
+      { type = "line-break", value = "\n\n" },
+      { type = "name", value = "multi" },
+      { type = "space", value = " " },
+      { type = "assign", value = "=" },
+      { type = "space", value = " " },
+      { type = "multi-string", value = '"""\ncake is\nlovely\n"""' },
       { type = "line-break", value = "\n\n" },
       { type = "name", value = "if" },
       { type = "space", value = " " },

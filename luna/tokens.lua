@@ -13,9 +13,9 @@ return {
   { type = 'number', pattern = '%d*%.?%d+E[%+%-]%d+' }, -- sci notation (long form)
   { type = 'number', pattern = '%d*%.?%d+' },           -- decimal number
 
-  { type = 'string', head = '"""',   body = {'\\.', '.'}, tail = '"""'  }, -- multiline string
-  { type = 'string', head = '"',     body = {'\\.', '.'}, tail = '"'    }, -- double quoted string
-  { type = 'string', head = "'",     body = {'\\.', '.'}, tail = "'"    }, -- single quoted string
+  { type = 'multi-string', head = '"""',   body = {'\\.', '.'}, tail = '"""'  }, -- multiline string
+  { type = 'string',       head = '"',     body = {'\\.', '.'}, tail = '"'    }, -- double quoted string
+  { type = 'string',       head = "'",     body = {'\\.', '.'}, tail = "'"    }, -- single quoted string
 
   -- symbols, grouped by char length
   { type = 'vararg', pattern = '%.%.%.' },
