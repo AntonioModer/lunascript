@@ -2,7 +2,7 @@
 
 A language that compiles to Lua, based largely on MoonScript and CoffeeScript. Compiler and language draft are works in progress.
 
-## Language Rundown
+## Language Features
 
 ### Variables and Scope
 Variables are automatically localized at the head of scope.
@@ -59,6 +59,7 @@ add = (a, b) -> a + b
 
 -- can drop parentheses with only one argument
 square = n -> n * n
+cube = n -> n * square n
 ```
 
 ### Tables
