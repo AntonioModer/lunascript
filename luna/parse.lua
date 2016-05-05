@@ -20,11 +20,14 @@ local function parse(tokens)
     return token
   end
 
-  local function panic(errpos)
-    errpos = errpos or current
-    local errformat = 'unexpected token %q (%s) at %d'
-    local errmsg = errformat:format(tokens[errpos].value, tokens[errpos].type, errpos)
-    error(errmsg, 0)
+  local function panic(format, ...)
+    if format then
+      error(format:format(...), 0)
+    else
+      local default = 'unexpected token %q (%s) at %d'
+      local message = default:format(tokens[current].value, tokens[current].type, current)
+      error(message, 0)
+    end
   end
 
   local function try(parse, ...)
@@ -33,7 +36,7 @@ local function parse(tokens)
     if token then return token end
     local errpos = current
     current = start
-    return nil, errpos
+    return nil
   end
 
 
@@ -57,7 +60,7 @@ local function parse(tokens)
   end
 
   local function parseExpressionList()
-    local explist = { try(parseExpression) }
+    local explist = { try(parseExpression) or panic() }
     pass 'space'
     while pass 'comma' do
       pass 'space'
@@ -82,18 +85,13 @@ local function parse(tokens)
 
 
   local function parseStatement()
-    return parseLetAssign()
+    return parseLetAssign() or panic()
   end
 
   local tree = { type = 'script', body = {} }
 
   while current <= #tokens do
-    local token, errpos = try(parseStatement)
-    if token then
-      table.insert(tree.body, token)
-    else
-      panic()
-    end
+    table.insert(tree.body, try(parseStatement))
   end
   return tree
 end

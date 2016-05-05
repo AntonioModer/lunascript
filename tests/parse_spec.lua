@@ -2,7 +2,7 @@ local lex = require 'luna.lex'
 local parse = require 'luna.parse'
 
 local source = [[
-let a, b, c = 1, 2, 3
+let a, b,c = 1, 2, 3
 ]]
 
 local tokens = lex(source)
