@@ -1,16 +1,24 @@
-local function compileStatement(node)
+local function compileLocal(node)
   if node.type == 'local' then
     local output = {}
     table.insert(output, 'local ')
     table.insert(output, table.concat(node.namelist, ', '))
     return table.concat(output)
-  elseif node.type == 'assign' then
+  end
+end
+
+local function compileAssign(node)
+  if node.type == 'assign' then
     local output = {}
     table.insert(output, table.concat(node.namelist, ', '))
     table.insert(output, ' = ')
     table.insert(output, table.concat(node.explist, ', '))
     return table.concat(output)
   end
+end
+
+local function compileStatement(node)
+  return compileLocal(node) or compileAssign(node)
 end
 
 local function compileBlock(node, level)
