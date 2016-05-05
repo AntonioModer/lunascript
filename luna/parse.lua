@@ -1,6 +1,4 @@
 local function parse(tokens)
-  print(require 'inspect' (tokens))
-
   local current = 1
 
   local function checkToken(tokentype)
@@ -31,8 +29,7 @@ local function parse(tokens)
     return nil, errpos
   end
 
-
-  local function parseStatement()
+  local function parseLetAssign()
     local let = pass 'let'
     pass 'space'
     local name = let and pass 'name'
@@ -40,7 +37,13 @@ local function parse(tokens)
     local assign = name and pass 'assign'
     pass 'space'
     local value = assign and (pass 'number' or pass 'string' or pass 'name')
-    return value and { type = 'let', target = name, assign = assign, value = value }
+    pass 'line-break'
+    return value and { type = 'let-assign', target = name, assign = assign, value = value }
+  end
+
+
+  local function parseStatement()
+    return parseLetAssign()
   end
 
   local tree = { type = 'script', body = {} }
