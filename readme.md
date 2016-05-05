@@ -4,6 +4,22 @@ A language that compiles to Lua, based largely on MoonScript and CoffeeScript. C
 
 ## Language Features
 
+### Comments
+Normal lua comments:
+```moon
+-- this is a comment
+-- this is another comment
+```
+
+Multi-line comments are fenced with `---`
+```moon
+---
+some
+multi-line
+commenting
+---
+```
+
 ### Variables and Scope
 Variables are automatically localized at the head of scope.
 ```moon
