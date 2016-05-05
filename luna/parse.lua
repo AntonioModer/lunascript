@@ -48,26 +48,23 @@ local function parse(tokens)
     return try(parseLiteralValue)
   end
 
-  local function parseNameList()
-    local names = { pass 'name' }
+  local function parseList(parse, ...)
+    local list = { parse(...) }
     pass 'space'
     while pass 'comma' do
       pass 'space'
-      table.insert(names, pass 'name' or panic())
+      table.insert(list, parse(...))
       pass 'space'
     end
-    return names[1] and names
+    return list[1] and list
+  end
+
+  local function parseNameList()
+    return parseList(pass, 'name')
   end
 
   local function parseExpressionList()
-    local explist = { try(parseExpression) or panic() }
-    pass 'space'
-    while pass 'comma' do
-      pass 'space'
-      table.insert(explist, try(parseLiteralValue) or panic())
-      pass 'space'
-    end
-    return explist[1] and explist
+    return parseList(try, parseExpression)
   end
 
   local function parseLetAssign()
@@ -85,13 +82,13 @@ local function parse(tokens)
 
 
   local function parseStatement()
-    return parseLetAssign() or panic()
+    return parseLetAssign()
   end
 
-  local tree = { type = 'script', body = {} }
+  local tree = { type = 'luna-script', body = {} }
 
   while current <= #tokens do
-    table.insert(tree.body, try(parseStatement))
+    table.insert(tree.body, try(parseStatement) or panic())
   end
   return tree
 end
