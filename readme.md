@@ -77,7 +77,7 @@ foo = "bar"
 escaped = "i have \"quotes\" inside"
 ```
 
-Luna uses `"""` for multiline strings. Initial indentation is ignored, and escapes are used.
+Luna uses `"""` for multiline strings. Initial indentation is ignored, and escapes work the same as in regular strings.
 ```moon
 ascii = """
         Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt
