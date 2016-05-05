@@ -70,14 +70,14 @@ local function parse(tokens)
   local function parseLetAssign()
     local let = pass 'let'
     pass 'space'
-    local names = try(parseNameList)
+    local namelist = try(parseNameList)
     pass 'space'
-    local assign = names and pass 'assign'
+    local assign = namelist and pass 'assign'
     pass 'space'
     local explist = assign and try(parseExpressionList)
     pass 'space'
     pass 'line-break'
-    return explist and { type = 'let-assign', names = names, assign = assign, explist = explist }
+    return explist and { type = 'let-assign', namelist = namelist, assign = assign, explist = explist }
   end
 
 
@@ -85,7 +85,7 @@ local function parse(tokens)
     return parseLetAssign()
   end
 
-  local tree = { type = 'luna-script', body = {} }
+  local tree = { type = 'block', body = {} }
 
   while current <= #tokens do
     table.insert(tree.body, try(parseStatement) or panic())

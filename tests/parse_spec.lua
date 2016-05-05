@@ -10,6 +10,6 @@ local tree = parse(tokens)
 
 describe('luna.parse', function()
   it('parses let assignments', function()
-    assert.are.same({ type = 'let-assign', names = {'a', 'b', 'c'}, assign = '=', explist = {'1', '2', '3'} }, tree.body[1])
+    assert.are.same({ type = 'let-assign', namelist = {'a', 'b', 'c'}, assign = '=', explist = {'1', '2', '3'} }, tree.body[1])
   end)
 end)
