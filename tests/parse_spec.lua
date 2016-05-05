@@ -2,14 +2,14 @@ local lex = require 'luna.lex'
 local parse = require 'luna.parse'
 
 local source = [[
-let a = 5
+let a, b, c = 1, 2, 3
 ]]
 
-describe('luna.parse', function()
-  local tokens = lex(source)
-  local tree = parse(tokens)
+local tokens = lex(source)
+local tree = parse(tokens)
 
+describe('luna.parse', function()
   it('parses let assignments', function()
-    assert.are.same({ type = 'let-assign', target = 'a', assign = '=', value = '5' }, tree.body[1])
+    assert.are.same({ type = 'let-assign', names = {'a', 'b', 'c'}, assign = '=', explist = {'1', '2', '3'} }, tree.body[1])
   end)
 end)

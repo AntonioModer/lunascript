@@ -20,25 +20,64 @@ local function parse(tokens)
     return token
   end
 
-  local function try(parse)
+  local function try(parse, ...)
     local start = current
-    local token = parse()
+    local token = parse(...)
     if token then return token end
     local errpos = current
     current = start
     return nil, errpos
   end
 
+
+  local function parseLiteralValue()
+    return pass 'number' or pass 'string' or pass 'name' or pass 'vararg'
+  end
+
+  local function parseExpression()
+    return try(parseLiteralValue)
+  end
+
+  local function parseNameList()
+    local names = {pass 'name'}
+    pass 'space'
+    while pass 'comma' do
+      pass 'space'
+      local name = pass 'name'
+      if name then
+        table.insert(names, name)
+      else
+        return nil
+      end
+      pass 'space'
+    end
+    return names[1] and names
+  end
+
+  local function parseExpressionList()
+    local explist = { try(parseExpression) }
+    pass 'space'
+    while pass 'comma' do
+      pass 'space'
+      local exp = try(parseLiteralValue)
+      if not exp then return nil end
+      table.insert(explist, exp)
+      pass 'space'
+    end
+    return explist[1] and explist
+  end
+
   local function parseLetAssign()
     local let = pass 'let'
     pass 'space'
-    local name = let and pass 'name'
+    local names = try(parseNameList)
     pass 'space'
-    local assign = name and pass 'assign'
+    local assign = names and pass 'assign'
     pass 'space'
-    local value = assign and (pass 'number' or pass 'string' or pass 'name')
+    local explist = assign and try(parseExpressionList)
+    pass 'space'
     pass 'line-break'
-    return value and { type = 'let-assign', target = name, assign = assign, value = value }
+    return explist and { type = 'let-assign', names = names, assign = assign, explist = explist }
   end
 
 
