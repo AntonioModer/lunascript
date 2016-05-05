@@ -23,6 +23,7 @@ return {
   { type = 'floor-divide',  pattern = '//'   },
   { type = 'concat',        pattern = '%.%.' },
   { type = 'equality',      pattern = '==' },
+  { type = 'inequality',    pattern = '~=' },
   { type = 'greater-equal', pattern = '>=' },
   { type = 'less-equal',    pattern = '<=' },
 
