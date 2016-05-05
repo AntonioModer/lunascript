@@ -20,6 +20,13 @@ local function parse(tokens)
     return token
   end
 
+  local function panic(errpos)
+    errpos = errpos or current
+    local errformat = 'unexpected token %q (%s) at %d'
+    local errmsg = errformat:format(tokens[errpos].value, tokens[errpos].type, errpos)
+    error(errmsg, 0)
+  end
+
   local function try(parse, ...)
     local start = current
     local token = parse(...)
@@ -39,16 +46,11 @@ local function parse(tokens)
   end
 
   local function parseNameList()
-    local names = {pass 'name'}
+    local names = { pass 'name' }
     pass 'space'
     while pass 'comma' do
       pass 'space'
-      local name = pass 'name'
-      if name then
-        table.insert(names, name)
-      else
-        return nil
-      end
+      table.insert(names, pass 'name' or panic())
       pass 'space'
     end
     return names[1] and names
@@ -59,9 +61,7 @@ local function parse(tokens)
     pass 'space'
     while pass 'comma' do
       pass 'space'
-      local exp = try(parseLiteralValue)
-      if not exp then return nil end
-      table.insert(explist, exp)
+      table.insert(explist, try(parseLiteralValue) or panic())
       pass 'space'
     end
     return explist[1] and explist
@@ -92,9 +92,7 @@ local function parse(tokens)
     if token then
       table.insert(tree.body, token)
     else
-      local errformat = 'unexpected token %q (%s) at %d'
-      local errmsg = errformat:format(tokens[errpos].value, tokens[errpos].type, errpos)
-      error(errmsg, 0)
+      panic()
     end
   end
   return tree
