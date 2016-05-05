@@ -1,7 +1,7 @@
 return {
   -- comments
-  { type = 'comment', pattern = '%s*%-%-%-.-%-%-%-%s*', ignore = true }, -- multiline
-  { type = 'comment', pattern = '%s*%-%-[^\r\n]*',      ignore = true }, -- single line
+  { type = 'comment', pattern = '%s*%-%-%-.-%-%-%-%s*' }, -- multiline
+  { type = 'comment', pattern = '%s*%-%-[^\r\n]*' }, -- single line
 
   -- whitespace
   { type = 'space',             pattern = '[ \t]+'  }, -- space character
