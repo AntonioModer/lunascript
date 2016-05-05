@@ -54,7 +54,7 @@ return {
   { type = 'then',     find = 'then',     pattern = '%l+' },
   { type = 'while',    find = 'while',    pattern = '%l+' },
   { type = 'do',       find = 'do',       pattern = '%l+' },
-  { type = 'local',    find = 'local',    pattern = '%l+' },
+  { type = 'let',      find = 'let',    pattern = '%l+' },
   { type = 'global',   find = 'global',   pattern = '%l+' },
   { type = 'switch',   find = 'switch',   pattern = '%l+' },
   { type = 'when',     find = 'when',     pattern = '%l+' },

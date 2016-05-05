@@ -21,65 +21,35 @@ commenting
 ```
 
 ### Variables and Scope
-Variables are automatically localized at the head of scope.
+Variable scoping rules are the same as in lua, except instead of `local`, use `let`. Any variables declared with `let` are localized at the head of the block.
 ```moon
-high = 5
-hello = 'world'
-a, b, c = 1, 2, 3
+let foo = 'bar'
+do
+  let a = 1
+  let b = 2
 ```
 ```lua
-local high, hello, a, b, c
-high = 5
-hello = 'world'
-a, b, c = 1, 2, 3
-```
-
-Scopes underneath will try to reach the variables above them. Use `local` to prevent this.
-```moon
-foo = 'bar'
+-- lua output
+local foo
+foo = bar
 do
-  foo = 'baz'
-print foo --> 'baz'
-
-do
-  local foo = 'bullshit'
-print foo --> 'baz'
-```
-
-Use `global` for non-locals.
-```moon
-global Constant = "Important Value"
-```
-
-Wildcards:
-```moon
-value = 10
-
-do
-  local * -- don't read anything from above scope
-  value = 20
-  value += 1
-  print value --> 21
-
-do
-  global * -- make every variable in here global
-  haveCake = true
-
-print value --> 10
-print haveCake --> true
+  local a, b
+  a = 1
+  b = 2
+end
 ```
 
 ### Strings
 Normal strings:
 ```moon
-hello = 'world'
-foo = "bar"
-escaped = "i have \"quotes\" inside"
+let hello = 'world'
+let foo = "bar"
+let escaped = "i have \"quotes\" inside"
 ```
 
 Luna uses `"""` for multiline strings. Initial indentation is ignored, and escapes work the same as in regular strings.
 ```moon
-ascii = """
+let ascii = """
         Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
         laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
@@ -88,11 +58,13 @@ ascii = """
         """
 ```
 ```lua
-ascii = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt\nut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco\nlaboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\nvoluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat\ncupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+-- lua output:
+local ascii = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt\nut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco\nlaboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\nvoluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat\ncupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 ```
 
 ### Assignment Operators
 ```moon
+let counter = 0
 counter += 1
 ```
 
@@ -109,28 +81,28 @@ assert 0 isnt 100
 
 ### Functions
 ```moon
-sayHello = -> print 'hello'
+let sayHello = -> print 'hello'
 
-add = (a, b) -> a + b
+let add = (a, b) -> a + b
 
 -- can drop parentheses with only one argument
-square = n -> n * n
-cube = n -> n * square n
+let square = n -> n * n
+let cube = n -> n * square n
 ```
 
 ### Tables
 ```moon
-song = {'do', 're', 'mi', 'fa', 'so'}
+let song = {'do', 're', 'mi', 'fa', 'so'}
 
 -- newlines replace commas
-bits = {
+let bits = {
   1, 0, 1
   0, 0, 1
   1, 1, 0
 }
 
 -- literal keys need no braces
-countries = {
+let countries = {
   'United States' = {
     size = 'big'
     population = 'a lot'
@@ -140,7 +112,8 @@ countries = {
     population = 'probably smaller'
   }
 }
-importantNumbers = {
+
+let importantNumbers = {
   3.14 = 'pi'
   42 = 'life'
   420 = 'blaze it'
@@ -176,7 +149,7 @@ for char in "hello world":gmatch '.'
 
 ### Array Table Loops: `for ... of`
 ```moon
-items = { 'eggs', 'milk', 'cheese', 'bread' }
+let items = { 'eggs', 'milk', 'cheese', 'bread' }
 
 print 'we need:'
 for item of items
@@ -192,23 +165,23 @@ for n of 2 to 10 by 2
   print n .. ' is an even number'
 
 -- assign it to a table
-hundred = 1 to 100
+let hundred = 1 to 100
 ```
 
 ### Slices
 ```moon
-slice = content[1 to 10]
-everyOther = content[1 to 10 by 2]
-reversed = content[10 to 1 by -1]
-reversed = content[10 to 1] -- implicit -1 when the second number is less than the first
+let slice = content[1 to 10]
+let everyOther = content[1 to 10 by 2]
+let reversed = content[10 to 1 by -1]
+let reversed = content[10 to 1] -- implicit -1 when the second number is less than the first
 
-firstTen = content[to 10] -- if omitted, starts at 1
+let firstTen = content[to 10] -- if omitted, starts at 1
 ```
 
 Using the `#` operator for the length of the table.
 ```moon
-copy = content[to #]
-reversed = content[# to 1]
+let copy = content[to #]
+let reversed = content[# to 1]
 ```
 
 ### While
@@ -219,32 +192,32 @@ while notEnoughMoney()
 
 ### Comprehensions using `every`
 ```moon
-numbers = every number for number of numbers
-letters = every letter for letter in sentence:gmatch '.'
+let numbers = every number for number of numbers
+let letters = every letter for letter in sentence:gmatch '.'
 
 -- short form:
-numbers = every number of numbers
-letter = every letter in sentence:gmatch '.'
+let numbers = every number of numbers
+let letter = every letter in sentence:gmatch '.'
 
 -- conditions with `when`
-vowels = every letter in sentence:gmatch '.' when 'aeiou':find letter
+let vowels = every letter in sentence:gmatch '.' when 'aeiou':find letter
 
 -- multiline: split `for` and `when` on their own line
-vowels = every letter
+let vowels = every letter
   for letter in sentence:gmatch '.'
   when 'aeiou':find letter
 
 -- recursive
-grid = every {x, y}
+let grid = every {x, y}
   for x of 1 to 100
   for y of 1 to 100
 
 -- return two values for key-value pairs
-people = {
+let people = {
   { name = 'Bob',   status = 'Happy' }
   { name = 'Larry', status = 'Sad' }
 }
 
-statusMap = every person.name, person.status
+let statusMap = every person.name, person.status
   for person of people
 ```
