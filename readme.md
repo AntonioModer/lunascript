@@ -42,7 +42,7 @@ counter += 1
 
 Available: `+=`, `-=`, `*=`, `/=`, `..=`, `and=`, `or=`
 
-## Equality Operator Aliases
+### Equality Operator Aliases
 ```moon
 assert 10 == 10
 assert 10 is 10
@@ -112,7 +112,6 @@ switch value
 ```
 
 ### Iterator Loops: `for ... in`
-Lua iterator loop:
 ```moon
 for char in "hello world":gmatch '.'
   print char
