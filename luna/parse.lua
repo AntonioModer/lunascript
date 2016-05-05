@@ -88,11 +88,11 @@ function parse.lex(source, identity)
         or matchKeyword('fun')
 
         -- keyword operators
-        or matchKeyword('is', 'binary-operator')
-        or matchKeyword('isnt', 'binary-operator')
-        or matchKeyword('and', 'binary-operator')
-        or matchKeyword('or', 'binary-operator')
-        or matchKeyword('not', 'unary-operator')
+        or matchKeyword('is')
+        or matchKeyword('isnt')
+        or matchKeyword('and')
+        or matchKeyword('or')
+        or matchKeyword('not')
 
         -- name
         or matchToken('[%a_][%w_]*', 'literal-name')
@@ -101,12 +101,12 @@ function parse.lex(source, identity)
         or matchToken('%.%.%.', 'literal-vararg')
 
         -- comparison operators
-        or matchToken('>=', 'binary-operator')
-        or matchToken('<=', 'binary-operator')
-        or matchToken('==', 'binary-operator')
-        or matchToken('~=', 'binary-operator')
-        or matchToken('<', 'binary-operator')
-        or matchToken('>', 'binary-operator')
+        or matchToken('>=', 'greater-equality')
+        or matchToken('<=', 'less-equality')
+        or matchToken('==', 'equality')
+        or matchToken('~=', 'non-equality')
+        or matchToken('>', 'greater')
+        or matchToken('<', 'less')
 
         -- assign operators
         or matchToken('%.%.=', 'assign-concat')
@@ -117,12 +117,12 @@ function parse.lex(source, identity)
         or matchToken('%=', 'assign-equals')
 
         -- binary operators
-        or matchToken('%.%.', 'binary-operator')
-        or matchToken('//', 'binary-operator')
-        or matchToken('/', 'binary-operator')
-        or matchToken('%+', 'binary-operator')
-        or matchToken('%-', 'binary-operator')
-        or matchToken('%*', 'binary-operator')
+        or matchToken('%.%.', 'concat')
+        or matchToken('//', 'division-floor')
+        or matchToken('/', 'division')
+        or matchToken('%+', 'add')
+        or matchToken('%-', 'subtract')
+        or matchToken('%*', 'multiply')
 
         then
         else
@@ -131,7 +131,7 @@ function parse.lex(source, identity)
           error(errmsg, 0)
         end
       end
-      
+
       linenum = linenum + 1
     end
   end
