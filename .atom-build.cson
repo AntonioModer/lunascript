@@ -1,2 +1,8 @@
-cmd: 'busted'
-args: ['tests']
+targets:
+  'playground':
+    cmd: 'luajit'
+    args: ['playground.lua']
+
+  'run-specs':
+    cmd: 'busted'
+    args: ['tests']
