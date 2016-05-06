@@ -6,13 +6,13 @@ A language that compiles to Lua, based largely on MoonScript and CoffeeScript. C
 
 ### Comments
 Normal lua comments:
-```moon
+```coffee
 -- this is a comment
 -- this is another comment
 ```
 
 Multi-line comments are fenced with `---`
-```moon
+```coffee
 ---
 some
 multi-line
@@ -22,7 +22,7 @@ commenting
 
 ### Variables and Scope
 Variable scoping rules are the same as in lua, except instead of `local`, use `let`. Any variables declared with `let` are localized at the head of the block.
-```moon
+```coffee
 let foo = 'bar'
 do
   let a = 1
@@ -41,14 +41,14 @@ end
 
 ### Strings
 Normal strings:
-```moon
+```coffee
 let hello = 'world'
 let foo = "bar"
 let escaped = "i have \"quotes\" inside"
 ```
 
 Luna uses `"""` for multiline strings. Initial indentation is ignored, and escapes work the same as in regular strings.
-```moon
+```coffee
 let ascii = """
             Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt
             ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
@@ -64,15 +64,15 @@ ascii = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmo
 ```
 
 ### Assignment Operators
-```moon
+```coffee
 let counter = 0
 counter += 1
 ```
 
 Available: `+=`, `-=`, `*=`, `/=`, `..=`, `and=`, `or=`
 
-### Equality Operator Aliases
-```moon
+### Operator Aliases
+```coffee
 assert 10 == 10
 assert 10 is 10
 
@@ -81,7 +81,7 @@ assert 0 isnt 100
 ```
 
 ### Functions
-```moon
+```coffee
 let sayHello = -> print 'hello'
 
 let add = (a, b) -> a + b
@@ -92,7 +92,7 @@ let cube = n -> n * square n
 ```
 
 ### Tables
-```moon
+```coffee
 let song = {'do', 're', 'mi', 'fa', 'so'}
 
 -- newlines replace commas
@@ -122,7 +122,7 @@ let importantNumbers = {
 ```
 
 ### Conditions
-```moon
+```coffee
 if world is 'safe'
   chill()
 elseif world isnt 'stable'
@@ -132,7 +132,7 @@ else
 ```
 
 ### Switch
-```moon
+```coffee
 switch value
   when 1
     print 'value is 1'
@@ -143,13 +143,13 @@ switch value
 ```
 
 ### Iterator Loops: `for ... in`
-```moon
+```coffee
 for char in "hello world":gmatch '.'
   print char
 ```
 
 ### Array Table Loops: `for ... of`
-```moon
+```coffee
 let items = { 'eggs', 'milk', 'cheese', 'bread' }
 
 print 'we need:'
@@ -158,7 +158,7 @@ for item of items
 ```
 
 ### Ranges
-```moon
+```coffee
 for n of 1 to 10
   print n .. ' is a number'
 
@@ -170,7 +170,7 @@ let hundred = 1 to 100
 ```
 
 ### Slices
-```moon
+```coffee
 let slice = content[1 to 10]
 let everyOther = content[1 to 10 by 2]
 let reversed = content[10 to 1 by -1]
@@ -180,19 +180,19 @@ let firstTen = content[to 10] -- if omitted, starts at 1
 ```
 
 Using the `#` operator for the length of the table.
-```moon
+```coffee
 let copy = content[to #]
 let reversed = content[# to 1]
 ```
 
 ### While
-```moon
+```coffee
 while notEnoughMoney()
   getMoney()
 ```
 
 ### Comprehensions using `every`
-```moon
+```coffee
 let numbers = every number for number of numbers
 let letters = every letter for letter in sentence:gmatch '.'
 
