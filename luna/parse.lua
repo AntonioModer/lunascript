@@ -20,6 +20,11 @@ local function parse(tokens)
     return token
   end
 
+  local function skip(...)
+    pass(...)
+    return true
+  end
+
   local function panic(format, ...)
     if format then
       error(format:format(...), 0)
@@ -44,8 +49,35 @@ local function parse(tokens)
     return pass 'number' or pass 'string' or pass 'name' or pass 'vararg'
   end
 
+  local function parseBinaryOperator()
+    return pass 'plus'
+    or pass 'minus'
+    or pass 'multiply'
+    or pass 'divide'
+    or pass 'modulo'
+    or pass 'power'
+    or pass 'equality'
+    or pass 'inequality'
+    or pass 'greater'
+    or pass 'less'
+    or pass 'greater-equal'
+    or pass 'less-equal'
+    or pass 'concat'
+    or pass 'floor-divide'
+    or pass 'and'
+    or pass 'or'
+  end
+
+  local function parseBinaryExpression()
+    local left = try(parseLiteralValue)
+    local op = left and skip 'space' and try(parseBinaryOperator)
+    local right = op and skip 'space' and try(parseLiteralValue)
+    return right and { type = 'binary-expression', left = left, op = op, right = right }
+  end
+
   local function parseExpression()
-    return try(parseLiteralValue)
+    return try(parseBinaryExpression)
+    or try(parseLiteralValue)
   end
 
   local function parseList(parse, ...)

@@ -5,6 +5,8 @@ let foo = 'bar'
 let a, b, c = 1, 2, 3
 
 global = "var"
+
+ten = 3 + 7
 ]]
 
 local output = [[
@@ -12,6 +14,7 @@ local a, b, c, foo
 foo = 'bar'
 a, b, c = 1, 2, 3
 global = "var"
+ten = 3 + 7
 ]]
 
 describe('luna', function()

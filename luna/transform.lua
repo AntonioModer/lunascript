@@ -1,9 +1,31 @@
+local function transformExpression(exp)
+  if exp.type == 'binary-expression' then
+    return exp
+  else
+    return exp
+  end
+end
+
+local function transformNameList(namelist)
+  return namelist
+end
+
+local function transformExpressionList(explist)
+  local values = {}
+  for i, exp in ipairs(explist) do
+    table.insert(values, transformExpression(exp))
+  end
+  return values
+end
+
 local function transformAssign(node, scope)
   if node.type == 'assign' then
-    return { type = 'assign', namelist = node.namelist, explist = node.explist }
+    local names = transformNameList(node.namelist)
+    local values = transformExpressionList(node.explist)
+    return { type = 'assign', namelist = names, explist = values }
   elseif node.type == 'let-assign' then
-    local names = node.namelist
-    local values = node.explist
+    local names = transformNameList(node.namelist)
+    local values = transformExpressionList(node.explist)
 
     for i, name in ipairs(names) do
       scope[name] = true
