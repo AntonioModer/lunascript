@@ -26,7 +26,7 @@ local function parse(tokens)
     else
       local default = 'unexpected token %q (%s) at %d'
       local message = default:format(tokens[current].value, tokens[current].type, current)
-      error(message, 0)
+      error(message)
     end
   end
 
