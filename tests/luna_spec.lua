@@ -1,8 +1,26 @@
 local luna = require 'luna'
 
+local source = [[
+let foo = 'bar'
+let a, b, c = 1, 2, 3
+
+global = "var"
+]]
+
+local output = [[
+local a, b, c, foo
+foo = 'bar'
+a, b, c = 1, 2, 3
+global = "var"
+]]
+
 describe('luna', function()
+  it('parses empty source', function()
+    assert.are.same('\n', luna.tolua '')
+  end)
+
   it('can translate from luna code to lua', function()
-    assert.are.same(luna.tolua 'let foo = "bar"', 'local foo\nfoo = "bar"\n')
+    assert.are.same(output, luna.tolua(source))
   end)
 
   it('can run luna code directly', function()

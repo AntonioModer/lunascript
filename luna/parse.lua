@@ -67,9 +67,7 @@ local function parse(tokens)
     return parseList(try, parseExpression)
   end
 
-  local function parseLetAssign()
-    local let = pass 'let'
-    pass 'space'
+  local function parseAssign()
     local namelist = try(parseNameList)
     pass 'space'
     local assign = namelist and pass 'assign'
@@ -77,12 +75,21 @@ local function parse(tokens)
     local explist = assign and try(parseExpressionList)
     pass 'space'
     pass 'line-break'
-    return explist and { type = 'let-assign', namelist = namelist, assign = assign, explist = explist }
+    return explist and { type = 'assign', namelist = namelist, assign = assign, explist = explist }
   end
 
+  local function parseLetAssign()
+    local let = pass 'let'
+    pass 'space'
+    local assign = let and try(parseAssign)
+    if assign then
+      assign.type = 'let-assign'
+      return assign
+    end
+  end
 
   local function parseStatement()
-    return parseLetAssign()
+    return try(parseLetAssign) or try(parseAssign)
   end
 
   local tree = { type = 'block', body = {} }

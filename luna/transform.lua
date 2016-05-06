@@ -1,5 +1,7 @@
-local function transformStatement(node, scope)
-  if node.type == 'let-assign' then
+local function transformAssign(node, scope)
+  if node.type == 'assign' then
+    return { type = 'assign', namelist = node.namelist, explist = node.explist }
+  elseif node.type == 'let-assign' then
     local names = node.namelist
     local values = node.explist
 
@@ -9,6 +11,10 @@ local function transformStatement(node, scope)
 
     return { type = 'assign', namelist = names, explist = values }
   end
+end
+
+local function transformStatement(node, scope)
+  return transformAssign(node, scope)
 end
 
 local function transformBlock(node)
@@ -24,8 +30,10 @@ local function transformBlock(node)
     for name in pairs(scope) do
       table.insert(locals, name)
     end
-    table.sort(locals)
-    table.insert(output.body, 1, { type = 'local', namelist = locals })
+    if #locals > 0 then
+      table.sort(locals)
+      table.insert(output.body, 1, { type = 'local', namelist = locals })
+    end
 
     return output
   end
