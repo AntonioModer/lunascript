@@ -16,4 +16,4 @@ local source = [[
 "#{test}"
 ]]
 
-print(inspect(lex(source)))
+print(inspect(lex(source), { newline = '', indent = '' }))
