@@ -1,7 +1,9 @@
 local function compileExpression(node)
   if node.type == 'binary-expression' then
     return table.concat({ node.left, node.op, compileExpression(node.right) }, ' ')
-  else
+  elseif node.type == 'unary-expression' then
+    return table.concat({ node.op, compileExpression(node.value) })
+  elseif type(node) == 'string' then
     return node
   end
 end

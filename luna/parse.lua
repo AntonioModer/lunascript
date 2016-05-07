@@ -70,15 +70,28 @@ local function parse(tokens)
     or pass 'or'
   end
 
+  local function parseUnaryOperator()
+    return pass 'minus'
+    or pass 'len'
+    or pass 'not'
+  end
+
+  local function parseUnaryExpression()
+    local op = try(parseUnaryOperator)
+    local value = op and try(parseExpression)
+    return value and { type = 'unary-expression', op = op, value = value }
+  end
+
   local function parseBinaryExpression()
-    local left = try(parseLiteralValue)
+    local left = try(parseUnaryExpression) or try(parseLiteralValue)
     local op = left and skip 'space' and try(parseBinaryOperator)
     local right = op and skip 'space' and try(parseExpression)
     return right and { type = 'binary-expression', left = left, op = op, right = right }
   end
 
   function parseExpression()
-    return try(parseBinaryExpression)
+    return try(parseUnaryExpression)
+    or try(parseBinaryExpression)
     or try(parseLiteralValue)
   end
 

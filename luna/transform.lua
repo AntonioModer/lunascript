@@ -1,5 +1,7 @@
 local function transformExpression(exp)
-  if exp.type == 'binary-expression' then
+  if exp.type == 'unary-expression' then
+    return exp
+  elseif exp.type == 'binary-expression' then
     return exp
   else
     return exp
