@@ -45,6 +45,8 @@ local function parse(tokens)
   end
 
 
+  local parseExpression
+
   local function parseLiteralValue()
     return pass 'number' or pass 'string' or pass 'name' or pass 'vararg'
   end
@@ -71,11 +73,11 @@ local function parse(tokens)
   local function parseBinaryExpression()
     local left = try(parseLiteralValue)
     local op = left and skip 'space' and try(parseBinaryOperator)
-    local right = op and skip 'space' and try(parseLiteralValue)
+    local right = op and skip 'space' and try(parseExpression)
     return right and { type = 'binary-expression', left = left, op = op, right = right }
   end
 
-  local function parseExpression()
+  function parseExpression()
     return try(parseBinaryExpression)
     or try(parseLiteralValue)
   end

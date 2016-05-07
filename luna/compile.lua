@@ -1,6 +1,6 @@
 local function compileExpression(node)
   if node.type == 'binary-expression' then
-    return table.concat({ node.left, node.op, node.right }, ' ')
+    return table.concat({ node.left, node.op, compileExpression(node.right) }, ' ')
   else
     return node
   end
