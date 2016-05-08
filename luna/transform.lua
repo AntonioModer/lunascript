@@ -15,12 +15,24 @@ local function transformBinaryExpression(exp)
 end
 
 local function transformString(node)
-  
+  if node.type == 'literal-string' then
+    local result
+    for i, contentNode in ipairs(node.content) do
+      local contentValue
+      if contentNode.type == 'string-content' then
+        contentValue = { type = 'literal', value = node.head .. contentNode.value .. node.tail }
+      else
+        contentValue = transformExpression(contentNode)
+      end
+      result = result and { type = 'binary-expression', left = result, op = '..', right = contentValue } or contentValue
+    end
+    return result
+  end
 end
 
 local function transformLiteral(node)
-  return node.type == 'literal-name' or node.type == 'literal-number'
-  and { type = 'literal', value = exp.value }
+  return (node.type == 'literal-name' or node.type == 'literal-number')
+  and { type = 'literal', value = node.value }
 end
 
 function transformExpression(exp)

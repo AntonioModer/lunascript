@@ -64,9 +64,11 @@ local function parse(tokens)
   end
 
   local function parseString()
-    if pass 'string-head' then
+    local head = pass 'string-head'
+    if head then
       local content = {}
-      while not pass 'string-tail' do
+      local tail = pass 'string-tail'
+      while not tail do
         if pass 'string-infix-open' then
           table.insert(content, parseExpression())
           local _ = pass 'string-infix-close' or panic()
@@ -76,8 +78,10 @@ local function parse(tokens)
         if text then
           table.insert(content, { type = 'string-content', value = text })
         end
+
+        tail = pass 'string-tail'
       end
-      return { type = 'literal-string', content = content }
+      return { type = 'literal-string', head = head, tail = tail, content = content }
     end
   end
 
