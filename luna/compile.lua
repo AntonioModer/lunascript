@@ -1,17 +1,17 @@
 local function compileExpression(node)
-  if node.type == 'binary-expression' then
+  if node.type == 'literal' then
+    return node.value
+  elseif node.type == 'binary-expression' then
     return table.concat({ node.left, node.op, compileExpression(node.right) }, ' ')
   elseif node.type == 'unary-expression' then
     return table.concat({ node.op, compileExpression(node.value) })
-  elseif type(node) == 'string' then
-    return node
   end
 end
 
 local function compileNameList(namelist)
   local names = {}
   for i, name in ipairs(namelist) do
-    table.insert(names, name)
+    table.insert(names, name.value)
   end
   return table.concat(names, ', ')
 end
@@ -26,14 +26,14 @@ end
 
 local function compileLocal(node)
   if node.type == 'local' then
-    return table.concat { 'local ', compileNameList(node.namelist) }
+    return table.concat { 'local ', compileNameList(node.names) }
   end
 end
 
 local function compileAssign(node)
   if node.type == 'assign' then
     return table.concat {
-      compileNameList(node.namelist), ' = ', compileExpressionList(node.explist)
+      compileNameList(node.vars), ' = ', compileExpressionList(node.values)
     }
   end
 end

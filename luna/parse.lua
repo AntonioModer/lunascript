@@ -29,8 +29,10 @@ local function parse(tokens)
     if format then
       error(format:format(...), 0)
     else
-      local default = 'unexpected token %q (%s) at %d'
-      local message = default:format(tokens[current].value, tokens[current].type, current)
+      local token = tokens[current]
+      local char = token.value:gsub('\n', '\\n')
+      local default = 'unexpected token "%s" (%s) at %d'
+      local message = default:format(char, token.type, current)
       error(message)
     end
   end
@@ -47,8 +49,49 @@ local function parse(tokens)
 
   local parseExpression
 
-  local function parseLiteralValue()
-    return pass 'number' or pass 'string' or pass 'name' or pass 'vararg'
+  local function parseNumber()
+    local number = pass 'number'
+    return number and { type = 'literal-number', value = number }
+  end
+
+  local function parseName()
+    local name = pass 'name'
+    return name and { type = 'literal-name', value = name }
+  end
+
+  local function parseVararg()
+    return pass 'vararg' and { type = 'literal-vararg' }
+  end
+
+  local function parseString()
+    if pass 'string-head' then
+      local content = {}
+      while not pass 'string-tail' do
+        if pass 'string-infix-open' then
+          table.insert(content, parseExpression())
+          local _ = pass 'string-infix-close' or panic()
+        end
+
+        local text = pass 'string-content'
+        if text then
+          table.insert(content, { type = 'string-content', value = text })
+        end
+      end
+      return { type = 'literal-string', content = content }
+    end
+  end
+
+  local function parseLiteral()
+    return try(parseString)
+    or try(parseNumber)
+    or try(parseName)
+    or try(parseVararg)
+  end
+
+  local function parseUnaryOperator()
+    return pass 'minus'
+    or pass 'len'
+    or pass 'not'
   end
 
   local function parseBinaryOperator()
@@ -70,44 +113,41 @@ local function parse(tokens)
     or pass 'or'
   end
 
-  local function parseUnaryOperator()
-    return pass 'minus'
-    or pass 'len'
-    or pass 'not'
-  end
-
   local function parseUnaryExpression()
     local op = try(parseUnaryOperator)
-    local value = op and try(parseExpression)
+    local value = op and (try(parseLiteral) or try(parseUnaryExpression))
     return value and { type = 'unary-expression', op = op, value = value }
   end
 
   local function parseBinaryExpression()
-    local left = try(parseUnaryExpression) or try(parseLiteralValue)
-    local op = left and skip 'space' and try(parseBinaryOperator)
-    local right = op and skip 'space' and try(parseExpression)
+    local left = try(parseUnaryExpression) or try(parseLiteral)
+    pass 'space'
+    local op = left and try(parseBinaryOperator)
+    pass 'space'
+
+    -- if we found a binary operator but can't parse an expression after that,
+    -- panic, because there can only be an expression in this case.
+    -- if not, that's most definitely an error.
+    local right = op and (try(parseExpression) or panic())
     return right and { type = 'binary-expression', left = left, op = op, right = right }
   end
 
   function parseExpression()
     return try(parseUnaryExpression)
     or try(parseBinaryExpression)
-    or try(parseLiteralValue)
+    or try(parseLiteral)
   end
 
   local function parseList(parse, ...)
     local list = { parse(...) }
-    pass 'space'
-    while pass 'comma' do
-      pass 'space'
-      table.insert(list, parse(...))
-      pass 'space'
+    while skip 'space' and pass 'comma' do
+      table.insert(list, skip 'space' and parse(...))
     end
     return list[1] and list
   end
 
   local function parseNameList()
-    return parseList(pass, 'name')
+    return parseList(parseName)
   end
 
   local function parseExpressionList()
@@ -115,20 +155,19 @@ local function parse(tokens)
   end
 
   local function parseAssign()
-    local namelist = try(parseNameList)
+    local vars = try(parseNameList)
     pass 'space'
-    local assign = namelist and pass 'assign'
+    local assign = vars and pass 'assign'
     pass 'space'
-    local explist = assign and try(parseExpressionList)
+    local values = assign and try(parseExpressionList)
     pass 'space'
     pass 'line-break'
-    return explist and { type = 'assign', namelist = namelist, assign = assign, explist = explist }
+    return values and { type = 'assign', vars = vars, assign = assign, values = values }
   end
 
   local function parseLetAssign()
     local let = pass 'let'
-    pass 'space'
-    local assign = let and try(parseAssign)
+    local assign = let and skip 'space' and try(parseAssign)
     if assign then
       assign.type = 'let-assign'
       return assign

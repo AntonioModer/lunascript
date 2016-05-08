@@ -3,12 +3,16 @@ local parse = require 'luna.parse'
 local transform = require 'luna.transform'
 local compile = require 'luna.compile'
 
+local function tree(source)
+  return parse(lex(source))
+end
+
+local function luatree(source)
+  return transform(tree(source))
+end
+
 local function tolua(source)
-  local tokens = lex(source)
-  local lunatree = parse(tokens)
-  local luatree = transform(lunatree)
-  local output = compile(luatree)
-  return output
+  return compile(luatree(source))
 end
 
 local function loadlunastring(str)
@@ -32,4 +36,7 @@ return {
   tolua = tolua,
   dostring = dolunastring,
   dofile = dolunafile,
+  tokenize = lex,
+  tree = tree,
+  luatree = luatree,
 }

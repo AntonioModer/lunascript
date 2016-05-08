@@ -1,19 +1,8 @@
-local lex = require 'luna.lex'
 local luna = require 'luna'
 local inspect = require 'inspect'
 
 local source = [[
-"te\"st"
-'te\'st'
-
-"""
-'test'
-"test"
-#{a + b}
-"""
-
-'#{test}'
-"#{test}"
+let foobar = 123
 ]]
 
-print(inspect(lex(source), { newline = '', indent = '' }))
+print(luna.tolua(source))
