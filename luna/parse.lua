@@ -1,43 +1,4 @@
-local function parseLines(tokens)
-  local lines = {
-    { indent = 0, tokens = {} }
-  }
-
-  local current = 1
-
-  local function matchLine()
-    local token = tokens[current]
-
-    if token.type == 'line-break' then
-      local line = { indent = 0, tokens = {} }
-      table.insert(lines, line)
-      current = current + 1; token = tokens[current]
-
-      if token and token.type == 'space' then
-        line.indent = #token.value
-        current = current + 1
-      end
-    elseif token.type == 'line-continue' then
-      table.insert(lines[#lines].tokens, { type = 'space', value = token.value })
-      current = current + 1
-    else
-      table.insert(lines[#lines].tokens, token)
-      current = current + 1
-    end
-  end
-
-  while current <= #tokens do
-    matchLine()
-  end
-
-  print(require 'inspect' (lines))
-
-  return lines
-end
-
 local function parse(tokens)
-  local lines = parseLines(tokens)
-
   local current = 1
   local indentLevel = 0
 
