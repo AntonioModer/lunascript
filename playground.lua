@@ -3,6 +3,7 @@ local inspect = require 'inspect'
 
 local source = [[
 let theAnswer = 42
+let blazeit = "420yoloswag"
 ]]
 
 print(inspect(luna.tree(source)))

@@ -1,6 +1,5 @@
 local function parse(tokens)
   local current = 1
-  local indentLevel = 0
 
   local function checkToken(tokentype)
     local token = tokens[current] or {}
@@ -49,7 +48,6 @@ local function parse(tokens)
 
 
   local parseExpression
-  local parseStatement
 
   local function parseNumber()
     local number = pass 'number'
@@ -166,7 +164,6 @@ local function parse(tokens)
     local values = op and skip 'space' and try(parseExpressionList)
     return values
       and skip 'space'
-      and skip 'line-break'
       and { type = 'assign', names = names, op = op, values = values }
   end
 
@@ -176,42 +173,41 @@ local function parse(tokens)
     return assign and { type = 'let-assign', names = assign.names, op = assign.op, values = assign.values }
   end
 
+  local function parseDoStatement()
+  end
+
+  local function parseStatement()
+    return or try(parseDoStatement)
+    or try(parseLetAssign)
+    or try(parseAssign)
+    or nil
+  end
+
   local function parseBlock()
-    local keyword = pass 'do'
-    if keyword then
-      skip 'line-break'
+    local block = { type = 'block', body = {} }
+    local space = pass 'space'
+    local indent = space and #space.value or 0
 
-      local indent = pass 'space'
-      local prevIndent
-      if #indent > indentLevel then
-        prevIndent, indentLevel = indentLevel, #indent
-      end
+    local function getNode()
+      return try(parseStatement)
+    end
 
-      local block = { type = 'block', body = {} }
-      local statement = try(parseStatement)
-      local _ = statement and table.insert(block.body, statement)
+    for node in getNode do
+      table.insert(block.body, node)
 
       skip 'line-break'
       local space = pass 'space'
-      if space and #space == prevIndent
-      or not space and prevIndent == 0 then
-        return block
-      else
-        panic()
+      if (space and #space.value or 0) ~= indent then
+        break
       end
     end
+
+    return block
   end
 
-  function parseStatement()
-    return try(parseBlock) or try(parseLetAssign) or try(parseAssign)
-  end
-
-  local tree = { type = 'block', body = {} }
-
-  while current <= #tokens do
-    table.insert(tree.body, try(parseStatement) or panic())
-  end
-  return tree
+  local block = parseBlock(tokens)
+  if current <= #tokens then panic() end
+  return block
 end
 
 return parse
