@@ -2,7 +2,9 @@ local luna = require 'luna'
 local inspect = require 'inspect'
 
 local source = [[
-let outer = 1
+let outer \
+  = \
+  1
 do
   let inner = 2
 ]]

@@ -70,9 +70,9 @@ local function lex(source)
     or match('comment', '%-%-[^\r\n]*')
 
     -- white space
-    or match('space', '[ \t]+')
+    or match('line-continue', '%s*\\%s+')
     or match('line-break', '[\r\n]+')
-    or match('line-continue', '\\%s+')
+    or match('space', '[ \t]+')
 
     -- numbers
     or match('number', '0x%x+')               -- hexadecimal
