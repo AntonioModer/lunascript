@@ -33,7 +33,7 @@ end
 local function compileAssign(node)
   if node.type == 'assign' then
     return table.concat {
-      compileNameList(node.vars), ' = ', compileExpressionList(node.values)
+      compileNameList(node.names), ' = ', compileExpressionList(node.values)
     }
   end
 end

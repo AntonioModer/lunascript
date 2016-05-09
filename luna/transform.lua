@@ -42,8 +42,12 @@ function transformExpression(exp)
   or transformLiteral(exp)
 end
 
-local function transformVarList(names)
-  return names
+local function transformNameList(names)
+  local result = {}
+  for i, var in ipairs(names) do
+    table.insert(result, transformLiteral(var))
+  end
+  return result
 end
 
 local function transformExpressionList(explist)
@@ -57,26 +61,26 @@ end
 local function transformAssign(node)
   return node.type == 'assign' and {
     type = 'assign',
-    vars = transformVarList(node.vars),
+    names = transformNameList(node.names),
     values = transformExpressionList(node.values),
   }
 end
 
 local function transformLetAssign(node, scope)
   if node.type == 'let-assign' then
-    local varlist = transformVarList(node.vars)
+    local names = transformNameList(node.names)
     local values = transformExpressionList(node.values)
-    for i, var in ipairs(varlist) do
-      if var.type == 'literal-name' then
-        scope[var.value] = true
+    for i, name in ipairs(names) do
+      if name.type == 'literal-name' then
+        scope[name.value] = true
       end
     end
-    return { type = 'assign', vars = varlist, values = values }
+    return { type = 'assign', names = names, values = values }
   end
 end
 
 local function transformStatement(node, scope)
-  return transformLetAssign(node, scope) or transformAssign(node, scope)
+  return transformLetAssign(node, scope) or transformAssign(node)
 end
 
 local function transformBlock(node)

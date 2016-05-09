@@ -7,6 +7,6 @@ let bar = 'bar'
 let test = "hello #{world} foo #{bar}"
 ]]
 
--- print(inspect(luna.tree(source)))
-print(inspect(luna.luatree(source)))
-print(luna.tolua(source))
+print(inspect(luna.tree(source)))
+-- print(inspect(luna.luatree(source)))
+-- print(luna.tolua(source))

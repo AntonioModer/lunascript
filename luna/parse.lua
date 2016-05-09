@@ -125,14 +125,15 @@ local function parse(tokens)
 
   local function parseBinaryExpression()
     local left = try(parseUnaryExpression) or try(parseLiteral)
-    pass 'space'
-    local op = left and try(parseBinaryOperator)
-    pass 'space'
+
+    local op = left and skip 'space' and try(parseBinaryOperator)
+
 
     -- if we found a binary operator but can't parse an expression after that,
     -- panic, because there can only be an expression in this case.
     -- if not, that's most definitely an error.
-    local right = op and (try(parseExpression) or panic())
+    local right = op and skip 'space' and (try(parseExpression) or panic())
+    
     return right and { type = 'binary-expression', left = left, op = op, right = right }
   end
 
@@ -159,14 +160,13 @@ local function parse(tokens)
   end
 
   local function parseAssign()
-    local vars = try(parseNameList)
-    pass 'space'
-    local assign = vars and pass 'assign'
-    pass 'space'
-    local values = assign and try(parseExpressionList)
-    pass 'space'
-    pass 'line-break'
-    return values and { type = 'assign', vars = vars, assign = assign, values = values }
+    local names = try(parseNameList)
+    local assign = names and skip 'space' and pass 'assign'
+    local values = assign and skip 'space' and try(parseExpressionList)
+    return values
+      and skip 'space'
+      and skip 'line-break'
+      and { type = 'assign', names = names, assign = assign, values = values }
   end
 
   local function parseLetAssign()
