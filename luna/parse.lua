@@ -1,5 +1,6 @@
 local function parse(tokens)
   local current = 1
+  local indentLevel = 0
 
   local function checkToken(tokentype)
     local token = tokens[current] or {}
@@ -48,6 +49,7 @@ local function parse(tokens)
 
 
   local parseExpression
+  local parseStatement
 
   local function parseNumber()
     local number = pass 'number'
@@ -174,8 +176,34 @@ local function parse(tokens)
     return assign and { type = 'let-assign', names = assign.names, op = assign.op, values = assign.values }
   end
 
-  local function parseStatement()
-    return try(parseLetAssign) or try(parseAssign)
+  local function parseBlock()
+    local keyword = pass 'do'
+    if keyword then
+      skip 'line-break'
+
+      local indent = pass 'space'
+      local prevIndent
+      if #indent > indentLevel then
+        prevIndent, indentLevel = indentLevel, #indent
+      end
+
+      local block = { type = 'block', body = {} }
+      local statement = try(parseStatement)
+      local _ = statement and table.insert(block.body, statement)
+
+      skip 'line-break'
+      local space = pass 'space'
+      if space and #space == prevIndent
+      or not space and prevIndent == 0 then
+        return block
+      else
+        panic()
+      end
+    end
+  end
+
+  function parseStatement()
+    return try(parseBlock) or try(parseLetAssign) or try(parseAssign)
   end
 
   local tree = { type = 'block', body = {} }

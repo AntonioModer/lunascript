@@ -1,4 +1,5 @@
 local transformExpression
+local transformBlock
 
 local function transformUnaryExpression(exp)
   return exp.type == 'unary-expression'
@@ -80,10 +81,10 @@ local function transformLetAssign(node, scope)
 end
 
 local function transformStatement(node, scope)
-  return transformLetAssign(node, scope) or transformAssign(node)
+  return transformBlock(node, scope) or transformLetAssign(node, scope) or transformAssign(node)
 end
 
-local function transformBlock(node)
+function transformBlock(node)
   if node.type == 'block' then
     local output = { type = 'block', body = {} }
     local scope = {}

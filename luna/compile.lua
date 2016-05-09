@@ -1,3 +1,5 @@
+local compileBlock
+
 local function compileExpression(node)
   if node.type == 'name'
   or node.type == 'string'
@@ -44,11 +46,11 @@ local function compileStatement(node)
   return compileLocal(node) or compileAssign(node)
 end
 
-local function compileBlock(node, level)
+function compileBlock(node, level)
   local output = {}
   if node.type == 'block' then
     for i, statement in ipairs(node.body) do
-      table.insert(output, compileStatement(statement))
+      table.insert(output, compileStatement(statement) or compileBlock(statement, level + 1))
     end
   end
 

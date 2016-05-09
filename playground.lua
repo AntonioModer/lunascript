@@ -2,11 +2,9 @@ local luna = require 'luna'
 local inspect = require 'inspect'
 
 local source = [[
-let test = "test #{'test'}"
-let test = "overwriting test"
-let test2 = "foo"
-
-global = "don't look, i'm global"
+let outer = 1
+do
+  let inner = 2
 ]]
 
 -- print(inspect(luna.tree(source)))
