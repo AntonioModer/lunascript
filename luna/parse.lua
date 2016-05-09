@@ -48,6 +48,7 @@ local function parse(tokens)
 
 
   local parseExpression
+  local parseBlock
 
   local function parseNumber()
     local number = pass 'number'
@@ -174,19 +175,20 @@ local function parse(tokens)
   end
 
   local function parseDoStatement()
+    return pass 'do' and skip 'line-break' and parseBlock()
   end
 
   local function parseStatement()
-    return or try(parseDoStatement)
+    return try(parseDoStatement)
     or try(parseLetAssign)
     or try(parseAssign)
     or nil
   end
 
-  local function parseBlock()
+  function parseBlock()
     local block = { type = 'block', body = {} }
     local space = pass 'space'
-    local indent = space and #space.value or 0
+    local indent = #(space or '')
 
     local function getNode()
       return try(parseStatement)
@@ -197,7 +199,7 @@ local function parse(tokens)
 
       skip 'line-break'
       local space = pass 'space'
-      if (space and #space.value or 0) ~= indent then
+      if #(space or '') ~= indent then
         break
       end
     end
