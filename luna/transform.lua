@@ -15,12 +15,12 @@ local function transformBinaryExpression(exp)
 end
 
 local function transformString(node)
-  if node.type == 'literal-string' then
+  if node.type == 'string' then
     local result
     for i, contentNode in ipairs(node.content) do
       local contentValue
       if contentNode.type == 'string-content' then
-        contentValue = { type = 'literal', value = node.head .. contentNode.value .. node.tail }
+        contentValue = { type = 'string', value = node.head .. contentNode.value .. node.tail }
       else
         contentValue = transformExpression(contentNode)
       end
@@ -31,8 +31,8 @@ local function transformString(node)
 end
 
 local function transformLiteral(node)
-  return (node.type == 'literal-name' or node.type == 'literal-number')
-  and { type = 'literal', value = node.value }
+  return (node.type == 'name' or node.type == 'number')
+  and { type = node.type, value = node.value }
 end
 
 function transformExpression(exp)
@@ -71,8 +71,8 @@ local function transformLetAssign(node, scope)
     local names = transformNameList(node.names)
     local values = transformExpressionList(node.values)
     for i, name in ipairs(names) do
-      if name.type == 'literal-name' then
-        scope[name.value] = true
+      if name.type == 'name' then
+        scope[name.value] = name
       end
     end
     return { type = 'assign', names = names, values = values }
@@ -93,11 +93,11 @@ local function transformBlock(node)
     end
 
     local locals = {}
-    for name in pairs(scope) do
-      table.insert(locals, name)
+    for name, nameNode in pairs(scope) do
+      table.insert(locals, nameNode)
     end
     if #locals > 0 then
-      table.sort(locals)
+      table.sort(locals, function(a, b) return a.value < b.value end)
       table.insert(output.body, 1, { type = 'local', names = locals })
     end
 

@@ -51,16 +51,16 @@ local function parse(tokens)
 
   local function parseNumber()
     local number = pass 'number'
-    return number and { type = 'literal-number', value = number }
+    return number and { type = 'number', value = number }
   end
 
   local function parseName()
     local name = pass 'name'
-    return name and { type = 'literal-name', value = name }
+    return name and { type = 'name', value = name }
   end
 
   local function parseVararg()
-    return pass 'vararg' and { type = 'literal-vararg' }
+    return pass 'vararg' and { type = 'vararg' }
   end
 
   local function parseString()
@@ -81,7 +81,7 @@ local function parse(tokens)
 
         tail = pass 'string-tail'
       end
-      return { type = 'literal-string', head = head, tail = tail, content = content }
+      return { type = 'string', head = head, tail = tail, content = content }
     end
   end
 
@@ -128,12 +128,11 @@ local function parse(tokens)
 
     local op = left and skip 'space' and try(parseBinaryOperator)
 
-
     -- if we found a binary operator but can't parse an expression after that,
     -- panic, because there can only be an expression in this case.
     -- if not, that's most definitely an error.
     local right = op and skip 'space' and (try(parseExpression) or panic())
-    
+
     return right and { type = 'binary-expression', left = left, op = op, right = right }
   end
 
@@ -161,21 +160,18 @@ local function parse(tokens)
 
   local function parseAssign()
     local names = try(parseNameList)
-    local assign = names and skip 'space' and pass 'assign'
-    local values = assign and skip 'space' and try(parseExpressionList)
+    local op = names and skip 'space' and pass 'assign'
+    local values = op and skip 'space' and try(parseExpressionList)
     return values
       and skip 'space'
       and skip 'line-break'
-      and { type = 'assign', names = names, assign = assign, values = values }
+      and { type = 'assign', names = names, op = op, values = values }
   end
 
   local function parseLetAssign()
     local let = pass 'let'
     local assign = let and skip 'space' and try(parseAssign)
-    if assign then
-      assign.type = 'let-assign'
-      return assign
-    end
+    return assign and { type = 'let-assign', names = assign.names, op = assign.op, values = assign.values }
   end
 
   local function parseStatement()
