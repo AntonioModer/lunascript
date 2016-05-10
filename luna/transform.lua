@@ -1,5 +1,5 @@
 local transformExpression
-local transformBlock
+local transformBody
 
 local function transformUnaryExpression(exp)
   return exp.type == 'unary-expression'
@@ -80,34 +80,38 @@ local function transformLetAssign(node, scope)
   end
 end
 
-local function transformStatement(node, scope)
-  return transformBlock(node, scope) or transformLetAssign(node, scope) or transformAssign(node)
+local function transformDo(node, scope)
+  return node.type == 'do' and { type = 'do', body = transformBody(node.body) }
 end
 
-function transformBlock(node)
-  if node.type == 'block' then
-    local output = { type = 'block', body = {} }
-    local scope = {}
+local function transformStatement(node, scope)
+  return transformDo(node, scope)
+  or transformLetAssign(node, scope)
+  or transformAssign(node)
+end
 
-    for i, statement in ipairs(node.body) do
-      table.insert(output.body, transformStatement(statement, scope))
-    end
+function transformBody(body)
+  local result = {}
+  local scope = {}
 
-    local locals = {}
-    for name, nameNode in pairs(scope) do
-      table.insert(locals, nameNode)
-    end
-    if #locals > 0 then
-      table.sort(locals, function(a, b) return a.value < b.value end)
-      table.insert(output.body, 1, { type = 'local', names = locals })
-    end
-
-    return output
+  for i, statement in ipairs(body) do
+    table.insert(result, transformStatement(statement, scope))
   end
+
+  local locals = {}
+  for _, nameNode in pairs(scope) do
+    table.insert(locals, nameNode)
+  end
+  if #locals > 0 then
+    table.sort(locals, function(a, b) return a.value < b.value end)
+    table.insert(result, 1, { type = 'local', names = locals })
+  end
+
+  return result
 end
 
 local function transform(ast)
-  return transformBlock(ast)
+  return { type = 'lua-script', body = transformBody(ast.body) }
 end
 
 return transform

@@ -1,4 +1,4 @@
-local compileBlock
+local compileBody
 
 local function compileExpression(node)
   if node.type == 'name'
@@ -6,9 +6,9 @@ local function compileExpression(node)
   or node.type == 'number' then
     return node.value
   elseif node.type == 'binary-expression' then
-    return table.concat({ compileExpression(node.left), node.op, compileExpression(node.right) }, ' ')
+    return table.concat{ compileExpression(node.left), ' ', node.op, ' ', compileExpression(node.right) }
   elseif node.type == 'unary-expression' then
-    return table.concat({ node.op, compileExpression(node.value) })
+    return table.concat{ node.op, compileExpression(node.value) }
   end
 end
 
@@ -29,37 +29,37 @@ local function compileExpressionList(explist)
 end
 
 local function compileLocal(node)
-  if node.type == 'local' then
-    return table.concat { 'local ', compileNameList(node.names) }
-  end
+  return node.type == 'local'
+  and table.concat{ 'local ', compileNameList(node.names) }
 end
 
 local function compileAssign(node)
-  if node.type == 'assign' then
-    return table.concat {
-      compileNameList(node.names), ' = ', compileExpressionList(node.values)
-    }
-  end
+  return node.type == 'assign'
+  and table.concat{ compileNameList(node.names), ' = ', compileExpressionList(node.values) }
 end
 
-local function compileStatement(node)
-  return compileLocal(node) or compileAssign(node)
+local function compileDo(node, level)
+  return node.type == 'do'
+  and table.concat { 'do\n', compileBody(node.body, level + 1), '\n', string.rep('  ', level), 'end' }
 end
 
-function compileBlock(node, level)
+local function compileStatement(node, ...)
+  return compileDo(node, ...)
+  or compileLocal(node)
+  or compileAssign(node)
+end
+
+function compileBody(body, level)
   local output = {}
-  if node.type == 'block' then
-    for i, statement in ipairs(node.body) do
-      table.insert(output, compileStatement(statement) or compileBlock(statement, level + 1))
-    end
-  end
-
   local indent = string.rep('  ', level)
+  for i, statement in ipairs(body) do
+    table.insert(output, indent .. compileStatement(statement, level))
+  end
   return table.concat(output, '\n')
 end
 
 local function compile(tree)
-  return compileBlock(tree, 0) .. '\n'
+  return compileBody(tree.body, 0) .. '\n'
 end
 
 return compile

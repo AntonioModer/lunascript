@@ -174,29 +174,25 @@ local function parse(tokens)
     return assign and { type = 'let-assign', names = assign.names, op = assign.op, values = assign.values }
   end
 
-  local function parseDoStatement()
+  local function parseDo()
     local body = pass 'do' and skip 'line-break' and parseBody()
-    return body and { type = 'do-statement', body = body }
+    return body and { type = 'do', body = body }
   end
 
   local function parseStatement()
-    return try(parseDoStatement)
+    return try(parseDo)
     or try(parseLetAssign)
     or try(parseAssign)
     or nil
   end
 
   function parseBody()
-    local block = { type = 'block', body = {} }
+    local body = {}
     local space = pass 'space'
     local indent = #(space or '')
 
-    local function getNode()
-      return try(parseStatement)
-    end
-
-    for node in getNode do
-      table.insert(block.body, node)
+    for node in try, parseStatement do
+      table.insert(body, node)
 
       skip 'line-break'
       local space = pass 'space'
@@ -205,12 +201,12 @@ local function parse(tokens)
       end
     end
 
-    return block
+    return body
   end
 
-  local block = parseBody(tokens)
+  local body = parseBody(tokens)
   if current <= #tokens then panic() end
-  return block
+  return { type = 'luna-script', body = body }
 end
 
 return parse

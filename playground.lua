@@ -15,6 +15,6 @@ let a, b, c = 1, 2, 3
 
 ]]
 
-print(inspect(luna.tree(source)))
+-- print(inspect(luna.tree(source)))
 -- print(inspect(luna.luatree(source)))
--- print(luna.tolua(source))
+print(luna.tolua(source))
