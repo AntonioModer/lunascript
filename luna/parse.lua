@@ -48,7 +48,7 @@ local function parse(tokens)
 
 
   local parseExpression
-  local parseBlock
+  local parseBody
 
   local function parseNumber()
     local number = pass 'number'
@@ -175,7 +175,8 @@ local function parse(tokens)
   end
 
   local function parseDoStatement()
-    return pass 'do' and skip 'line-break' and parseBlock()
+    local body = pass 'do' and skip 'line-break' and parseBody()
+    return body and { type = 'do-statement', body = body }
   end
 
   local function parseStatement()
@@ -185,7 +186,7 @@ local function parse(tokens)
     or nil
   end
 
-  function parseBlock()
+  function parseBody()
     local block = { type = 'block', body = {} }
     local space = pass 'space'
     local indent = #(space or '')
@@ -199,7 +200,7 @@ local function parse(tokens)
 
       skip 'line-break'
       local space = pass 'space'
-      if #(space or '') ~= indent then
+      if #(space or '') < indent then
         break
       end
     end
@@ -207,7 +208,7 @@ local function parse(tokens)
     return block
   end
 
-  local block = parseBlock(tokens)
+  local block = parseBody(tokens)
   if current <= #tokens then panic() end
   return block
 end

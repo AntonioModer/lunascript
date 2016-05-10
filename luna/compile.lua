@@ -55,11 +55,11 @@ function compileBlock(node, level)
   end
 
   local indent = string.rep('  ', level)
-  return table.concat(output, '\n') .. '\n'
+  return table.concat(output, '\n')
 end
 
 local function compile(tree)
-  return compileBlock(tree, 0)
+  return compileBlock(tree, 0) .. '\n'
 end
 
 return compile

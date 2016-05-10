@@ -6,8 +6,13 @@ let theAnswer = 42
 
 do
   let blazeit = "420yoloswag"
+  let bacon = 'force'
 
-let bacon = 'force'
+  do
+    let test = 'testerino'
+
+let a, b, c = 1, 2, 3
+
 ]]
 
 print(inspect(luna.tree(source)))
