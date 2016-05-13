@@ -62,8 +62,13 @@ local function Lexer(source)
 end
 
 -- token matchers
-local function WhiteSpace(lexer)
-  return lexer:capture('[ \t]+', 'white-space')
+local function Space(lexer)
+  return lexer:capture('%s*\\%s+', 'space')
+  or lexer:capture('[ \t]+', 'space')
+end
+
+local function LineBreak(lexer)
+  return lexer:capture('[\r\n]+', 'line-break')
 end
 
 local function Number(lexer)
@@ -100,7 +105,7 @@ local function tokenize(source)
   local lexer = Lexer(source)
 
   while lexer.pos <= #source do
-    local token = WhiteSpace(lexer)
+    local token = Space(lexer) or LineBreak(lexer)
       or Number(lexer)
 
       or String(lexer, '"', '"')
