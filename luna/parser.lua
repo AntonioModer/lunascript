@@ -22,16 +22,23 @@ local function Parser(tokens)
         return token
       end
     end,
+
+    skip = function (self, ...)
+      self:pass(...)
+      return true
+    end,
   }
 end
 
-local function Statement(parser)
+local function Assignment(parser)
   local name = parser:pass('name')
-  parser:pass('space')
-  local equals = name and parser:pass('equals')
-  parser:pass('space')
-  local value = equals and parser:pass('number')
-  return value and { type = 'Assign', target = name, op = equals, value = value }
+  local equals = name and parser:skip('space') and parser:pass('equals')
+  local value = equals and parser:skip('space') and parser:pass('number')
+  return value and { type = 'Assignment', target = name, op = equals, value = value }
+end
+
+local function Statement(parser)
+  return Assignment(parser)
 end
 
 local function Body(parser)
@@ -45,7 +52,8 @@ end
 
 local function parse(tokens)
   local parser = Parser(tokens)
-  return { type = 'luna-script', body = Body(parser) }
+  local body = Body(parser)
+  return { type = 'LunaScript', body = body }
 end
 
 return { parse = parse }

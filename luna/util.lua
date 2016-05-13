@@ -60,7 +60,7 @@ local function dump(value)
         append(tostring(value))
       end
     elseif isArray(value) or isDeepTable(value) then
-      append(indent(), '{\n')
+      append('{\n')
       level = level + 1
       for i,v in ipairs(value) do
         append(indent())
@@ -77,7 +77,7 @@ local function dump(value)
       level = level - 1
       append(indent(), '}')
     else
-      append(indent(), '{ ')
+      append('{ ')
       for i,v in ipairs(value) do
         recprint(v)
         append(', ')
