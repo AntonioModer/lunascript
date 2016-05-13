@@ -1,11 +1,5 @@
 local lexer = require 'lexer'
 
-local inspect = require 'inspect'
-
-local source = [["hell\"o world" "test" 123 foobar]]
-
-local tokens, err = lexer.tokenize(source)
-
 local function isArray(tab)
   local len = 0
   for key in pairs(tab) do
@@ -96,4 +90,8 @@ local function pprint(value)
   print(table.concat(output))
 end
 
+
+local source = [[let notlet letnot "hell\"o world" "test" 123 foobar]]
+
+local tokens, err = lexer.tokenize(source)
 pprint(tokens or err)

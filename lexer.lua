@@ -87,6 +87,13 @@ local function String(lexer)
   end
 end
 
+local function Keyword(lexer)
+  local value = lexer:match('%l+')
+  if value == 'let' then
+    return Token('let', value, lexer.line, lexer.col), lexer:advance(#value)
+  end
+end
+
 -- convert source to tokens
 local function tokenize(source)
   local tokens = {}
@@ -95,8 +102,9 @@ local function tokenize(source)
   while lexer.pos <= #source do
     local token = WhiteSpace(lexer)
       or Number(lexer)
-      or Name(lexer)
       or String(lexer)
+      or Keyword(lexer)
+      or Name(lexer)
 
     if token then
       table.insert(tokens, token)
