@@ -3,6 +3,8 @@ local util = require 'luna.util'
 
 local source = [[
 let notlet letnot "hell\"o 'world'" 'test "test" \'test\'' 123.456 foobar
+=
+  
 
 line \
 continuation

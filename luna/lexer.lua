@@ -68,7 +68,7 @@ local function Space(lexer)
 end
 
 local function LineBreak(lexer)
-  return lexer:capture('[\r\n]+', 'line-break')
+  return lexer:capture('%s*[\r\n]+', 'line-break')
 end
 
 local function Number(lexer)
@@ -99,14 +99,20 @@ local function Keyword(lexer, word)
   end
 end
 
+local function Symbol(lexer, symbol, tokentype)
+  return lexer:capture('=', 'equals')
+end
+
 -- convert source to tokens
 local function tokenize(source)
   local tokens = {}
   local lexer = Lexer(source)
 
   while lexer.pos <= #source do
-    local token = Space(lexer) or LineBreak(lexer)
+    local token = LineBreak(lexer) or Space(lexer)
       or Number(lexer)
+
+      or Symbol(lexer)
 
       or String(lexer, '"', '"')
       or String(lexer, "'", "'")
