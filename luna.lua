@@ -27,6 +27,14 @@ local function isDeepTable(tab)
   return false
 end
 
+local function escapeKey(key)
+  if key:match('[%a_][%w_]*') == key then
+    return key
+  else
+    return table.concat{'[', tostring(key), ']'}
+  end
+end
+
 local function pprint(value)
   local level = 0
   local output = {}
@@ -50,7 +58,7 @@ local function pprint(value)
       else
         append(tostring(value))
       end
-    elseif isArray(value) then
+    elseif isArray(value) or isDeepTable(value) then
       append(indent(), '{\n')
       level = level + 1
       for i,v in ipairs(value) do
@@ -58,16 +66,27 @@ local function pprint(value)
         recprint(v)
         append(',\n')
       end
+      for k,v in pairs(value) do
+        if type(k) == 'string' then
+          append(escapeKey(k), ' = ')
+          recprint(v)
+          append(',\n')
+        end
+      end
       level = level - 1
       append(indent(), '}')
-    elseif isDeepTable(value) then
-      error('deep tables not implemented')
     else
       append(indent(), '{ ')
-      for k,v in pairs(value) do
-        append(tostring(k), ' = ')
+      for i,v in ipairs(value) do
         recprint(v)
         append(', ')
+      end
+      for k,v in pairs(value) do
+        if type(k) == 'string' then
+          append(escapeKey(k), ' = ')
+          recprint(v)
+          append(', ')
+        end
       end
       append('}')
     end
@@ -76,7 +95,5 @@ local function pprint(value)
   recprint(value)
   print(table.concat(output))
 end
-
--- print(tokens and inspect(tokens) or err)
 
 pprint(tokens or err)
