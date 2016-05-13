@@ -48,7 +48,14 @@ local function pprint(value)
   local function recprint(value)
     if type(value) ~= 'table' then
       if type(value) == 'string' then
-        append(string.format('%q', value))
+        local value = value:gsub('\n', '\\n')
+        if value:find("'") and value:find('"') then
+          append('[[', value, ']]')
+        elseif value:find("'") then
+          append('"', value, '"')
+        else
+          append("'", value, "'")
+        end
       else
         append(tostring(value))
       end
@@ -62,7 +69,7 @@ local function pprint(value)
       end
       for k,v in pairs(value) do
         if type(k) == 'string' then
-          append(escapeKey(k), ' = ')
+          append(indent(), escapeKey(k), ' = ')
           recprint(v)
           append(',\n')
         end
@@ -76,8 +83,15 @@ local function pprint(value)
         append(', ')
       end
       for k,v in pairs(value) do
-        if type(k) == 'string' then
-          append(escapeKey(k), ' = ')
+        if type(k) ~= 'number' then
+          if type(k) == 'string' then
+            append(escapeKey(k))
+          else
+            append('[')
+            recprint(v)
+            append(']')
+          end
+          append(' = ')
           recprint(v)
           if next(value, k) then
             append(',')
@@ -95,7 +109,7 @@ end
 
 
 local source = [[
-let notlet letnot "hell\"o world" 'test' 123.456 foobar
+let notlet letnot "hell\"o 'world'" 'test "test" \'test\'' 123.456 foobar
 
 line \
 continuation
