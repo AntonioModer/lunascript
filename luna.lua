@@ -5,9 +5,10 @@ local util = require 'luna.util'
 local source = [[
 a = 3.14
 b = 42
+hello = 'world'
 ]]
 
 local tokens, err = lexer.tokenize(source)
+local tree, err = parser.parse(tokens)
 
-local tree = parser.parse(tokens)
-util.print(tree)
+util.print(tree or err)
