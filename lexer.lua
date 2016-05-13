@@ -87,10 +87,10 @@ local function String(lexer, head, tail)
   end
 end
 
-local function Keyword(lexer)
+local function Keyword(lexer, word)
   local value = lexer:match('%l+')
-  if value == 'let' then
-    return Token('let', value, lexer.line, lexer.col), lexer:advance(#value)
+  if value == word then
+    return Token(word, value, lexer.line, lexer.col), lexer:advance(#value)
   end
 end
 
@@ -102,9 +102,12 @@ local function tokenize(source)
   while lexer.pos <= #source do
     local token = WhiteSpace(lexer)
       or Number(lexer)
+
       or String(lexer, '"', '"')
       or String(lexer, "'", "'")
-      or Keyword(lexer)
+
+      or Keyword(lexer, 'let')
+
       or Name(lexer)
 
     if token then
