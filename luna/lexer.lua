@@ -26,7 +26,6 @@ local function Lexer(source)
     -- advance the position by a certain distance
     -- automatically increments the line number as needed
     advance = function (self, distance)
-
       for i=1, distance do
         if self:getchar() == '\n' then
           self.line = self.line + 1
@@ -72,7 +71,8 @@ local function LineBreak(lexer)
 end
 
 local function Number(lexer)
-  return lexer:capture('%d+%.?%d+', 'number')
+  return lexer:capture('%d+.%d+', 'number')
+  or lexer:capture('%d+', 'number')
 end
 
 local function Name(lexer)
