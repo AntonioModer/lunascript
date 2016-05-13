@@ -26,7 +26,6 @@ local function Lexer(source)
     -- advance the position by a certain distance
     -- automatically increments the line number as needed
     advance = function (self, distance)
-      self.pos = self.pos + distance
 
       for i=1, distance do
         if self:getchar() == '\n' then
@@ -35,6 +34,7 @@ local function Lexer(source)
         else
           self.col = self.col + 1
         end
+        self.pos = self.pos + 1
       end
     end,
 
