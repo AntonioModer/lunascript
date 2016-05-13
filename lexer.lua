@@ -67,7 +67,7 @@ local function WhiteSpace(lexer)
 end
 
 local function Number(lexer)
-  return lexer:capture('%d*%.?%d+', 'number')
+  return lexer:capture('%d+%.?%d+', 'number')
 end
 
 local function Name(lexer)
