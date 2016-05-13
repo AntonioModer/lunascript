@@ -27,32 +27,34 @@ local function Parser(tokens)
       self:walk(...)
       return true
     end,
+
+
+    Assignment = function (self)
+      local name = self:walk('name')
+      local equals = name and self:skip('space') and self:walk('equals')
+      local value = equals and self:skip('space') and self:walk('number')
+      return value and { type = 'Assignment', target = name, op = equals, value = value }
+    end,
+
+    Statement = function (self)
+      return self:Assignment()
+    end,
+
+    Body = function (self)
+      local body = {}
+      local node = self:Statement()
+      while node do
+        table.insert(body, node)
+        node = self:walk('line-break') and self:Statement()
+      end
+      return body
+    end,
   }
-end
-
-local function Assignment(parser)
-  local name = parser:walk('name')
-  local equals = name and parser:skip('space') and parser:walk('equals')
-  local value = equals and parser:skip('space') and parser:walk('number')
-  return value and { type = 'Assignment', target = name, op = equals, value = value }
-end
-
-local function Statement(parser)
-  return Assignment(parser)
-end
-
-local function Body(parser)
-  local body = {}
-  for node in Statement, parser do
-    table.insert(body, node)
-    parser:walk('line-break')
-  end
-  return body
 end
 
 local function parse(tokens)
   local parser = Parser(tokens)
-  local body = Body(parser)
+  local body = parser:Body()
   return { type = 'LunaScript', body = body }
 end
 
