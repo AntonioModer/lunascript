@@ -31,17 +31,17 @@ local function Parser(tokens)
 
     Number = function (self)
       local number = self:walk('number')
-      return number and { type = 'number', value = number.value }
+      return number and { type = 'Number', value = number.value }
     end,
 
     Name = function (self)
       local name = self:walk('name')
-      return name and { type = 'name', value = name.value }
+      return name and { type = 'Name', value = name.value }
     end,
 
     String = function (self)
       local string = self:walk('string')
-      return string and { type = 'string', value = string.value }
+      return string and { type = 'String', value = string.value }
     end,
 
     Literal = function (self)
@@ -56,7 +56,7 @@ local function Parser(tokens)
 
     AssignmentOp = function (self)
       local op = self:walk('equals')
-      return op and { type = 'assign-equals', value = op.value }
+      return op and { type = 'AssignmentOp', value = op.value }
     end,
 
     Assignment = function (self)
