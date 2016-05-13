@@ -12,20 +12,34 @@ end
 -- lexer object
 local function Lexer(source)
   return {
-    pos = 1,
-    line = 1,
-    col = 1,
+    pos = 1,  -- current position in the source
+    line = 1, -- current line
+    col = 1,  -- current column
 
+    -- search for a match at the current position from a given pattern
+    -- if a match is found, returns the match
     match = function (self, pattern)
       local position, value = source:match('()(' .. pattern .. ')', self.pos)
       return position == self.pos and value
     end,
 
+    -- advance the position by a certain distance
+    -- automatically increments the line number as needed
     advance = function (self, distance)
       self.pos = self.pos + distance
-      self.col = self.col + distance
+
+      for i=1, distance do
+        if self:getchar() == '\n' then
+          self.line = self.line + 1
+          self.col = 1
+        else
+          self.col = self.col + 1
+        end
+      end
     end,
 
+    -- checks for a match of a pattern at the current position
+    -- if one is found, return the value and advance the position by the length of it
     walk = function (self, pattern)
       local value = self:match(pattern)
       if value then
@@ -33,9 +47,16 @@ local function Lexer(source)
       end
     end,
 
+    -- checks for a match of a pattern at the current position
+    -- if one is found, return a token for it with the given type, and advance the position
     capture = function (self, pattern, tokentype)
       local value, line, col = self:walk(pattern)
       return value and Token(tokentype, value, line, col) or nil
+    end,
+
+    -- return the current character
+    getchar = function (self)
+      return source:sub(self.pos, self.pos)
     end,
   }
 end
