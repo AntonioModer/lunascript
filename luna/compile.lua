@@ -1,15 +1,15 @@
-local function Transformer()
+local function Compiler()
   return {
     Number = function (self, node)
-      return node.type == 'Number' and node
+      return node.type == 'Number' and node.value
     end,
 
     Name = function (self, node)
-      return node.type == 'Name' and node
+      return node.type == 'Name' and node.value
     end,
 
     String = function (self, node)
-      return node.type == 'String' and node
+      return node.type == 'String' and node.value
     end,
 
     Literal = function (self, node)
@@ -23,12 +23,7 @@ local function Transformer()
     end,
 
     Assignment = function (self, node)
-      return node.type == 'Assignment'
-      and {
-        type = 'Assignment',
-        target = self:Literal(node.target),
-        value = self:Expression(node.value),
-      }
+      return table.concat { self:Name(node.target), ' = ', self:Expression(node.value) }
     end,
 
     Statement = function (self, node)
@@ -36,17 +31,17 @@ local function Transformer()
     end,
 
     Body = function (self, nodelist)
-      local body = {}
+      local output = {}
       for i, node in ipairs(nodelist) do
-        table.insert(body, self:Statement(node))
+        table.insert(output, self:Statement(node))
       end
-      return body
+      return table.concat(output, '\n')
     end,
   }
 end
 
-local function transform(lunatree)
-  return { type = 'LuaScript', body = Transformer():Body(lunatree.body) }
+local function compile(luatree)
+  return Compiler():Body(luatree.body)
 end
 
-return { transform = transform }
+return { compile = compile }
