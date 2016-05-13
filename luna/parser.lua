@@ -15,7 +15,7 @@ local function Parser(tokens)
       self.pos = self.pos + (n or 1)
     end,
 
-    pass = function (self, ...)
+    walk = function (self, ...)
       local token = self:check(...)
       if token then
         self:advance()
@@ -24,16 +24,16 @@ local function Parser(tokens)
     end,
 
     skip = function (self, ...)
-      self:pass(...)
+      self:walk(...)
       return true
     end,
   }
 end
 
 local function Assignment(parser)
-  local name = parser:pass('name')
-  local equals = name and parser:skip('space') and parser:pass('equals')
-  local value = equals and parser:skip('space') and parser:pass('number')
+  local name = parser:walk('name')
+  local equals = name and parser:skip('space') and parser:walk('equals')
+  local value = equals and parser:skip('space') and parser:walk('number')
   return value and { type = 'Assignment', target = name, op = equals, value = value }
 end
 
@@ -45,7 +45,7 @@ local function Body(parser)
   local body = {}
   for node in Statement, parser do
     table.insert(body, node)
-    parser:pass('line-break')
+    parser:walk('line-break')
   end
   return body
 end
