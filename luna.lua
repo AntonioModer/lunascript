@@ -1,5 +1,5 @@
-local lexer = require 'lexer'
-local util = require 'util'
+local lexer = require 'luna.lexer'
+local util = require 'luna.util'
 
 local source = [[
 let notlet letnot "hell\"o 'world'" 'test "test" \'test\'' 123.456 foobar
