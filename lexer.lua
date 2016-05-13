@@ -74,16 +74,16 @@ local function Name(lexer)
   return lexer:capture('[%a_][%w_]*', 'name')
 end
 
-local function String(lexer)
-  local value, line, col = lexer:walk('"')
+local function String(lexer, head, tail)
+  local value, line, col = lexer:walk(head)
   if value then
     local content = {}
-    while not lexer:walk('"') do
+    while not lexer:walk(tail) do
       local char = lexer:walk('\\.') or lexer:walk('.')
       if not char then return end
       table.insert(content, char)
     end
-    return Token('string', '"' .. table.concat(content) .. '"', line, col)
+    return Token('string', head .. table.concat(content) .. tail, line, col)
   end
 end
 
@@ -102,7 +102,8 @@ local function tokenize(source)
   while lexer.pos <= #source do
     local token = WhiteSpace(lexer)
       or Number(lexer)
-      or String(lexer)
+      or String(lexer, '"', '"')
+      or String(lexer, "'", "'")
       or Keyword(lexer)
       or Name(lexer)
 
@@ -110,7 +111,7 @@ local function tokenize(source)
       table.insert(tokens, token)
     else
       local line, col = lexer.line, lexer.col
-      local char = lexer.source:sub(lexer.pos, lexer.pos)
+      local char = source:sub(lexer.pos, lexer.pos)
       local errformat = '%d:%d: unknown character "%s"'
       local errmsg = errformat:format(line, col, char)
       return nil, errmsg

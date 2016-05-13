@@ -91,7 +91,7 @@ local function pprint(value)
 end
 
 
-local source = [[let notlet letnot "hell\"o world" "test" 123 foobar]]
+local source = [[let notlet letnot "hell\"o world" 'test' 123 foobar]]
 
 local tokens, err = lexer.tokenize(source)
 pprint(tokens or err)
