@@ -79,7 +79,10 @@ local function pprint(value)
         if type(k) == 'string' then
           append(escapeKey(k), ' = ')
           recprint(v)
-          append(', ')
+          if next(value, k) then
+            append(',')
+          end
+          append(' ')
         end
       end
       append('}')
