@@ -15,7 +15,7 @@ local function Parser(tokens)
       self.pos = self.pos + (n or 1)
     end,
 
-    walk = function (self, ...)
+    match = function (self, ...)
       local token = self:check(...)
       if token then
         self:advance()
@@ -24,23 +24,23 @@ local function Parser(tokens)
     end,
 
     skip = function (self, ...)
-      self:walk(...)
+      self:match(...)
       return true
     end,
 
 
     Number = function (self)
-      local number = self:walk('number')
+      local number = self:match('number')
       return number and { type = 'Number', value = number.value }
     end,
 
     Name = function (self)
-      local name = self:walk('name')
+      local name = self:match('name')
       return name and { type = 'Name', value = name.value }
     end,
 
     String = function (self)
-      local string = self:walk('string')
+      local string = self:match('string')
       return string and { type = 'String', value = string.value }
     end,
 
@@ -55,7 +55,7 @@ local function Parser(tokens)
     end,
 
     AssignmentOp = function (self)
-      local op = self:walk('equals')
+      local op = self:match('equals')
       return op and { type = 'AssignmentOp', value = op.value }
     end,
 
@@ -75,7 +75,7 @@ local function Parser(tokens)
       local node = self:Statement()
       while node do
         table.insert(body, node)
-        node = self:walk('line-break') and self:Statement()
+        node = self:match('line-break') and self:Statement()
       end
       return body
     end,
@@ -89,7 +89,7 @@ local function parse(tokens)
     local node = parser:Statement()
     if node then
       table.insert(body, node)
-      parser:walk('line-break')
+      parser:match('line-break')
     else
       local token = parser:current()
       local errformat = '%d:%d: unexpected token "%s"'
