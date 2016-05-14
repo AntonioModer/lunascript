@@ -15,4 +15,8 @@ local lunatree, err = parser.parse(tokens)
 local luatree = transform.transform(lunatree)
 local output = compile.compile(luatree)
 
+
+util.print(tokens or err)
+util.print(lunatree or err)
+util.print(luatree)
 print(output)

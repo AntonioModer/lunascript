@@ -57,7 +57,7 @@ local function Lexer(source)
     getchar = function (self)
       return source:sub(self.pos, self.pos)
     end,
-    
+
     Space = function (self)
       return self:capture('%s*\\%s+', 'space')
       or self:capture('[ \t]+', 'space')
@@ -97,7 +97,7 @@ local function Lexer(source)
     end,
 
     Symbol = function (self, symbol, tokentype)
-      return self:capture(symbol:gsub('(.)', '%%%1', tokentype)
+      return self:capture(symbol:gsub('(.)', '%%%1'), tokentype)
     end,
   }
 end
