@@ -57,50 +57,49 @@ local function Lexer(source)
     getchar = function (self)
       return source:sub(self.pos, self.pos)
     end,
+    
+    Space = function (self)
+      return self:capture('%s*\\%s+', 'space')
+      or self:capture('[ \t]+', 'space')
+    end,
+
+    LineBreak = function (self)
+      return self:capture('%s*[\r\n]+', 'line-break')
+    end,
+
+    Number = function (self)
+      return self:capture('%d+.%d+', 'number')
+      or self:capture('%d+', 'number')
+    end,
+
+    Name = function (self)
+      return self:capture('[%a_][%w_]*', 'name')
+    end,
+
+    String = function (self, head, tail)
+      local value, line, col = self:walk(head)
+      if value then
+        local content = {}
+        while not self:walk(tail) do
+          local char = self:walk('\\.') or self:walk('.')
+          if not char then return end
+          table.insert(content, char)
+        end
+        return Token('string', head .. table.concat(content) .. tail, line, col)
+      end
+    end,
+
+    Keyword = function (self, word)
+      local value = self:match('%l+')
+      if value == word then
+        return Token(word, value, self.line, self.col), self:advance(#value)
+      end
+    end,
+
+    Symbol = function (self, symbol, tokentype)
+      return self:capture(symbol:gsub('(.)', '%%%1', tokentype)
+    end,
   }
-end
-
--- token matchers
-local function Space(lexer)
-  return lexer:capture('%s*\\%s+', 'space')
-  or lexer:capture('[ \t]+', 'space')
-end
-
-local function LineBreak(lexer)
-  return lexer:capture('%s*[\r\n]+', 'line-break')
-end
-
-local function Number(lexer)
-  return lexer:capture('%d+.%d+', 'number')
-  or lexer:capture('%d+', 'number')
-end
-
-local function Name(lexer)
-  return lexer:capture('[%a_][%w_]*', 'name')
-end
-
-local function String(lexer, head, tail)
-  local value, line, col = lexer:walk(head)
-  if value then
-    local content = {}
-    while not lexer:walk(tail) do
-      local char = lexer:walk('\\.') or lexer:walk('.')
-      if not char then return end
-      table.insert(content, char)
-    end
-    return Token('string', head .. table.concat(content) .. tail, line, col)
-  end
-end
-
-local function Keyword(lexer, word)
-  local value = lexer:match('%l+')
-  if value == word then
-    return Token(word, value, lexer.line, lexer.col), lexer:advance(#value)
-  end
-end
-
-local function Symbol(lexer, symbol, tokentype)
-  return lexer:capture('=', 'equals')
 end
 
 -- convert source to tokens
@@ -109,17 +108,17 @@ local function tokenize(source)
   local lexer = Lexer(source)
 
   while lexer.pos <= #source do
-    local token = LineBreak(lexer) or Space(lexer)
-      or Number(lexer)
+    local token = lexer:LineBreak() or lexer:Space()
+      or lexer:Number()
 
-      or Symbol(lexer)
+      or lexer:Symbol('=', 'equals')
 
-      or String(lexer, '"', '"')
-      or String(lexer, "'", "'")
+      or lexer:String('"', '"')
+      or lexer:String("'", "'")
 
-      or Keyword(lexer, 'let')
+      or lexer:Keyword('let')
 
-      or Name(lexer)
+      or lexer:Name()
 
     if token then
       table.insert(tokens, token)

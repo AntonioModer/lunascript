@@ -1,5 +1,3 @@
-
-
 local function isArray(tab)
   local len = 0
   for key in pairs(tab) do
