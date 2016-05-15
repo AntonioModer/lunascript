@@ -8,6 +8,8 @@ local source = [[
 a = 3.14
 b = 42
 hello = 'world'
+
+foo.bar = foo.baz
 ]]
 
 local tokens, err = lexer.tokenize(source)

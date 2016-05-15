@@ -18,15 +18,28 @@ local function Transformer()
       or self:String(node)
     end,
 
+    NameIndex = function (self, node)
+      return node.type == 'NameIndex' and {
+        type = 'NameIndex',
+        subject = self:Variable(node.subject),
+        name = self:Name(node.name),
+      }
+    end,
+
+    Variable = function (self, node)
+      return self:NameIndex(node)
+      or self:Name(node)
+    end,
+
     Expression = function (self, node)
-      return self:Literal(node)
+      return self:Variable(node) or self:Literal(node)
     end,
 
     Assignment = function (self, node)
       return node.type == 'Assignment'
       and {
         type = 'Assignment',
-        target = self:Literal(node.target),
+        target = self:Variable(node.target),
         value = self:Expression(node.value),
       }
     end,

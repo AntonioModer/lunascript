@@ -50,8 +50,17 @@ local function Parser(tokens)
       or self:String()
     end,
 
+    Variable = function (self)
+      local var = self:Name()
+      while self:match('dot') do
+        local index = self:Name()
+        var = index and { type = 'NameIndex', subject = var, name = index } or var
+      end
+      return var
+    end,
+
     Expression = function (self)
-      return self:Literal()
+      return self:Variable() or self:Literal()
     end,
 
     AssignmentOp = function (self)
@@ -60,7 +69,7 @@ local function Parser(tokens)
     end,
 
     Assignment = function (self)
-      local name = self:Name()
+      local name = self:Variable()
       local equals = name and self:skip('space') and self:AssignmentOp()
       local value = equals and self:skip('space') and self:Expression()
       return value and { type = 'Assignment', target = name, op = equals, value = value }

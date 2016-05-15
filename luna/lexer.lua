@@ -112,6 +112,7 @@ local function tokenize(source)
       or lexer:Number()
 
       or lexer:Symbol('=', 'equals')
+      or lexer:Symbol('.', 'dot')
 
       or lexer:String('"', '"')
       or lexer:String("'", "'")

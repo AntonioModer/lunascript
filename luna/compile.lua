@@ -18,12 +18,22 @@ local function Compiler()
       or self:String(node)
     end,
 
+    NameIndex = function (self, node)
+      return node.type == 'NameIndex'
+      and table.concat { self:Variable(node.subject), '.', self:Name(node.name) }
+    end,
+
+    Variable = function (self, node)
+      return self:NameIndex(node)
+      or self:Name(node)
+    end,
+
     Expression = function (self, node)
-      return self:Literal(node)
+      return self:Variable(node) or self:Literal(node)
     end,
 
     Assignment = function (self, node)
-      return table.concat { self:Name(node.target), ' = ', self:Expression(node.value) }
+      return table.concat { self:Variable(node.target), ' = ', self:Expression(node.value) }
     end,
 
     Statement = function (self, node)
